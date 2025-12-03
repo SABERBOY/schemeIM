@@ -1,0 +1,121 @@
+
+import React, { useState } from 'react';
+import { User, Room } from './types';
+import { THEME } from './constants';
+import { Icon } from './Icon';
+
+export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Room[], onJoinRoom: (r: Room) => void, onAddRoom: (r: Room) => void, currentUser: User }) => {
+  const [showCreate, setShowCreate] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newCountry, setNewCountry] = useState('🇦🇪');
+  const [newDescription, setNewDescription] = useState('');
+
+  const handleCreate = () => {
+    if (!newTitle) return;
+    const newRoom: Room = {
+      id: Date.now().toString(),
+      title: newTitle,
+      country: newCountry,
+      host: currentUser,
+      users: [],
+      tags: ['New', 'Chat']
+    };
+    onAddRoom(newRoom);
+    setShowCreate(false);
+    setNewTitle('');
+    setNewDescription('');
+  };
+
+  return (
+    <div style={{ padding: '20px', height: '100%', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2 style={{ color: 'white', margin: 0 }}>Active Rooms</h2>
+        <button 
+          onClick={() => setShowCreate(true)}
+          style={{ 
+            backgroundColor: THEME.secondary, border: 'none', borderRadius: '20px', 
+            padding: '8px 16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' 
+          }}
+        >
+          <Icon name="add" color="black" size={16} /> Create
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+        {rooms.map(room => (
+          <div 
+            key={room.id}
+            onClick={() => onJoinRoom(room)}
+            style={{
+              backgroundColor: THEME.surface, borderRadius: '15px', overflow: 'hidden',
+              cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+            }}
+          >
+            <div style={{ height: '80px', backgroundColor: '#311B92', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 10, left: 10, fontSize: '24px' }}>{room.country}</div>
+              <div style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.5)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '10px' }}>
+                👥 {1 + room.users.length}
+              </div>
+            </div>
+            <div style={{ padding: '10px', display: 'flex', gap: '10px' }}>
+              <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `url(${room.host.avatar}) center/cover`, border: '1px solid #555' }} />
+                {room.host.frame && <img src={room.host.frame} style={{ position: 'absolute', top: '-15%', left: '-15%', width: '130%', height: '130%', pointerEvents: 'none' }} />}
+              </div>
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '5px', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{room.title}</div>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                  {room.tags.slice(0, 1).map(tag => (
+                    <span key={tag} style={{ fontSize: '10px', color: '#888', backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {showCreate && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{ backgroundColor: THEME.surface, padding: '20px', borderRadius: '15px', width: '80%' }}>
+            <h3 style={{ color: 'white', marginTop: 0 }}>Create Room</h3>
+            <input 
+              placeholder="Room Title"
+              value={newTitle}
+              onChange={e => setNewTitle(e.target.value)}
+              style={{ width: '100%', padding: '10px', marginBottom: '15px', borderRadius: '5px' }}
+            />
+            <input 
+              placeholder="Description (Optional)"
+              value={newDescription}
+              onChange={e => setNewDescription(e.target.value)}
+              style={{ width: '100%', padding: '10px', marginBottom: '15px', borderRadius: '5px' }}
+            />
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+              {['🇦🇪', '🇸🇦', '🇶🇦', '🇪🇬'].map(c => (
+                <button 
+                  key={c} 
+                  onClick={() => setNewCountry(c)}
+                  style={{ 
+                    fontSize: '24px', padding: '5px', border: newCountry === c ? `2px solid ${THEME.secondary}` : 'none', 
+                    background: 'transparent', borderRadius: '5px' 
+                  }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => setShowCreate(false)} style={{ flex: 1, padding: '10px', borderRadius: '5px' }}>Cancel</button>
+              <button onClick={handleCreate} style={{ flex: 1, padding: '10px', borderRadius: '5px', backgroundColor: THEME.secondary }}>Create</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
