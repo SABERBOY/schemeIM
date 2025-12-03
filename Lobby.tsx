@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { User, Room } from './types';
 import { THEME } from './constants';
 import { Icon } from './Icon';
+import { SocialGraph } from './SocialGraph';
 
 export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Room[], onJoinRoom: (r: Room) => void, onAddRoom: (r: Room) => void, currentUser: User }) => {
   const [showCreate, setShowCreate] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [newTitle, setNewTitle] = useState('');
   const [newCountry, setNewCountry] = useState('🇦🇪');
   const [newDescription, setNewDescription] = useState('');
@@ -26,19 +28,49 @@ export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Ro
     setNewDescription('');
   };
 
+  if (viewMode === 'map') {
+    return (
+      <div style={{ height: '100%', position: 'relative' }}>
+        <SocialGraph />
+        <button 
+          onClick={() => setViewMode('list')}
+          style={{ 
+            position: 'absolute', top: 20, right: 20,
+            backgroundColor: 'rgba(255,255,255,0.2)', color: 'white',
+            border: 'none', borderRadius: '20px', padding: '8px 16px',
+            cursor: 'pointer', zIndex: 10
+          }}
+        >
+          Close Map
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: '20px', height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2 style={{ color: 'white', margin: 0 }}>Active Rooms</h2>
-        <button 
-          onClick={() => setShowCreate(true)}
-          style={{ 
-            backgroundColor: THEME.secondary, border: 'none', borderRadius: '20px', 
-            padding: '8px 16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' 
-          }}
-        >
-          <Icon name="add" color="black" size={16} /> Create
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={() => setViewMode('map')}
+            style={{ 
+              backgroundColor: 'transparent', border: `1px solid ${THEME.secondary}`, borderRadius: '20px', 
+              padding: '8px', display: 'flex', alignItems: 'center', cursor: 'pointer'
+            }}
+          >
+            <Icon name="globe" color={THEME.secondary} size={16} />
+          </button>
+          <button 
+            onClick={() => setShowCreate(true)}
+            style={{ 
+              backgroundColor: THEME.secondary, border: 'none', borderRadius: '20px', 
+              padding: '8px 16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' 
+            }}
+          >
+            <Icon name="add" color="black" size={16} /> Create
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
