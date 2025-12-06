@@ -1,10 +1,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Room, Message } from './types';
+import { User, Room, Message, SharedProps } from './types';
 import { THEME, GIFTS, QUICK_REPLIES, REACTIONS } from './constants';
 import { Icon } from './Icon';
 
-export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, user: User, onLeave: () => void, onUpdateUser: (u: User) => void }) => {
+interface VoiceRoomProps extends SharedProps {
+  room: Room;
+  user: User;
+  onLeave: () => void;
+  onUpdateUser: (u: User) => void;
+}
+
+export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceRoomProps) => {
   const [micOn, setMicOn] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -101,11 +108,12 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
         padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         background: 'rgba(0,0,0,0.2)'
       }}>
+        {/* Flip close icon in RTL usually, but X is universal. Direction might change */}
         <div style={{ color: 'white' }} onClick={onLeave}>
           <Icon name="close" />
         </div>
         <div style={{ color: 'white', fontWeight: 'bold' }}>
-          {room.country} {room.title}
+          {room.country} <bdi>{room.title}</bdi>
         </div>
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
           <div style={{ color: 'white', cursor: 'pointer' }} onClick={() => setShowUserList(!showUserList)}>
@@ -115,7 +123,7 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
             <Icon name="settings" />
             {showSettings && (
               <div style={{
-                position: 'absolute', top: '30px', right: 0, width: '200px',
+                position: 'absolute', top: '30px', [lang === 'ar' ? 'left' : 'right']: 0, width: '200px',
                 backgroundColor: THEME.surface, padding: '10px', borderRadius: '8px', zIndex: 100,
                 boxShadow: '0 4px 10px rgba(0,0,0,0.5)'
               }}>
@@ -157,7 +165,7 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
               backgroundColor: THEME.secondary, borderRadius: '50%', padding: 2, fontSize: '10px'
             }}>👑</div>
           </div>
-          <span style={{ color: 'white', fontSize: '12px', marginTop: 5 }}>{room.host.name}</span>
+          <span style={{ color: 'white', fontSize: '12px', marginTop: 5 }}><bdi>{room.host.name}</bdi></span>
         </div>
         
         {/* Guest Seats (1-8) */}
@@ -185,13 +193,13 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
             }}
           />
           <div style={{
-            position: 'absolute', top: 0, right: 0, bottom: 0, width: '70%',
+            position: 'absolute', top: 0, [lang === 'ar' ? 'left' : 'right']: 0, bottom: 0, width: '70%',
             backgroundColor: THEME.surface, zIndex: 120, padding: '20px',
-            boxShadow: '-4px 0 10px rgba(0,0,0,0.5)', overflowY: 'auto',
+            boxShadow: lang === 'ar' ? '4px 0 10px rgba(0,0,0,0.5)' : '-4px 0 10px rgba(0,0,0,0.5)', overflowY: 'auto',
             animation: 'slideIn 0.3s ease-out'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ color: 'white', margin: 0 }}>Room Users</h3>
+              <h3 style={{ color: 'white', margin: 0 }}>{t('roomUsers')}</h3>
               <div onClick={() => setShowUserList(false)} style={{ color: 'white', cursor: 'pointer' }}>
                 <Icon name="close" />
               </div>
@@ -205,8 +213,8 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
                   {room.host.frame && <img src={room.host.frame} style={{ position: 'absolute', top: '-15%', left: '-15%', width: '130%', height: '130%', pointerEvents: 'none' }} />}
                 </div>
                 <div>
-                  <div style={{ color: THEME.secondary, fontWeight: 'bold' }}>{room.host.name}</div>
-                  <div style={{ color: '#888', fontSize: '0.8rem' }}>Host • 👑 Owner</div>
+                  <div style={{ color: THEME.secondary, fontWeight: 'bold' }}><bdi>{room.host.name}</bdi></div>
+                  <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('host')} • 👑 Owner</div>
                 </div>
               </div>
 
@@ -217,18 +225,18 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
                   {user.frame && <img src={user.frame} style={{ position: 'absolute', top: '-15%', left: '-15%', width: '130%', height: '130%', pointerEvents: 'none' }} />}
                 </div>
                 <div>
-                  <div style={{ color: 'white' }}>{user.name} (You)</div>
-                  <div style={{ color: '#888', fontSize: '0.8rem' }}>Guest • Lv. 5</div>
+                  <div style={{ color: 'white' }}><bdi>{user.name}</bdi> (You)</div>
+                  <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('guest')} • Lv. 5</div>
                 </div>
               </div>
 
-              {/* Mock Users for "Yalla" atmosphere if empty */}
+              {/* Mock Users */}
               {room.users.length === 0 && [1,2,3,4,5].map(i => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                    <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#555' }} />
                    <div>
                     <div style={{ color: 'white' }}>Habibi Guest {i}</div>
-                    <div style={{ color: '#888', fontSize: '0.8rem' }}>Guest</div>
+                    <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('guest')}</div>
                    </div>
                 </div>
               ))}
@@ -240,8 +248,8 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
                     {u.frame && <img src={u.frame} style={{ position: 'absolute', top: '-15%', left: '-15%', width: '130%', height: '130%', pointerEvents: 'none' }} />}
                   </div>
                   <div>
-                    <div style={{ color: 'white' }}>{u.name}</div>
-                    <div style={{ color: '#888', fontSize: '0.8rem' }}>Guest</div>
+                    <div style={{ color: 'white' }}><bdi>{u.name}</bdi></div>
+                    <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('guest')}</div>
                   </div>
                 </div>
               ))}
@@ -274,17 +282,18 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
               padding: '8px 12px', borderRadius: '12px',
               maxWidth: '80%', position: 'relative'
             }}>
-              <span style={{ color: THEME.secondary, fontWeight: 'bold', fontSize: '0.8rem', marginRight: '5px' }}>
-                {msg.userName}:
+              {/* BDI Tag isolates user names from RTL text context to prevent 123 User flip */}
+              <span style={{ color: THEME.secondary, fontWeight: 'bold', fontSize: '0.8rem', marginRight: '5px', marginLeft: '5px' }}>
+                <bdi>{msg.userName}</bdi>:
               </span>
               <span style={{ color: msg.type === 'gift' ? THEME.secondary : chatText, fontSize: chatFontSize }}>
-                {msg.content} {msg.giftIcon}
+                <bdi>{msg.content}</bdi> {msg.giftIcon}
               </span>
 
               {/* Reaction Button */}
               <div 
                 onClick={() => setShowReactionPicker(showReactionPicker === msg.id ? null : msg.id)}
-                style={{ position: 'absolute', right: -25, top: 0, cursor: 'pointer', opacity: 0.6 }}
+                style={{ position: 'absolute', [lang === 'ar' ? 'left' : 'right']: -25, top: 0, cursor: 'pointer', opacity: 0.6 }}
               >
                 <span style={{ fontSize: '14px' }}>😊</span>
               </div>
@@ -292,7 +301,7 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
               {/* Reaction Picker */}
               {showReactionPicker === msg.id && (
                 <div style={{
-                  position: 'absolute', top: -35, left: 0, backgroundColor: THEME.surface,
+                  position: 'absolute', top: -35, [lang === 'ar' ? 'right' : 'left']: 0, backgroundColor: THEME.surface,
                   borderRadius: '15px', padding: '5px', display: 'flex', gap: '5px', zIndex: 10
                 }}>
                   {REACTIONS.map(r => (
@@ -304,7 +313,7 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
             
             {/* Display Reactions */}
             {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-              <div style={{ display: 'flex', gap: '4px', marginLeft: '5px', marginTop: '2px' }}>
+              <div style={{ display: 'flex', gap: '4px', marginInlineStart: '5px', marginTop: '2px' }}>
                 {Object.entries(msg.reactions).map(([r, count]) => (
                   <span key={r} style={{ fontSize: '10px', backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 4px', borderRadius: '8px', color: 'white' }}>
                     {r} {count}
@@ -360,7 +369,7 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
               type="text" 
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Say something..."
+              placeholder={t('saySomething')}
               style={{
                 flex: 1, padding: '10px', border: 'none', background: 'transparent',
                 color: 'white', outline: 'none'
@@ -410,7 +419,7 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
           padding: '20px', zIndex: 100
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', color: 'white' }}>
-            <span>Send Gift</span>
+            <span>{t('sendGift')}</span>
             <span style={{ color: THEME.secondary }}>💰 {user.gold}</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
@@ -436,7 +445,7 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser }: { room: Room, u
               border: 'none', backgroundColor: 'rgba(255,255,255,0.1)', color: 'white'
             }}
           >
-            Cancel
+            {t('cancel')}
           </button>
         </div>
       )}

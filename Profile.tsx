@@ -1,9 +1,15 @@
 
 import React, { useState } from 'react';
-import { User } from './types';
+import { User, SharedProps, Language } from './types';
 import { THEME, AVATAR_FRAMES } from './constants';
 
-export const Profile = ({ user, onUpdateUser }: { user: User, onUpdateUser: (u: User) => void }) => {
+interface ProfileProps extends SharedProps {
+  user: User;
+  onUpdateUser: (u: User) => void;
+  onSetLang: (l: Language) => void;
+}
+
+export const Profile = ({ user, onUpdateUser, lang, t, onSetLang }: ProfileProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(user.name);
   const [showSocial, setShowSocial] = useState<'followers'|'following'|null>(null);
@@ -25,7 +31,6 @@ export const Profile = ({ user, onUpdateUser }: { user: User, onUpdateUser: (u: 
   const randomizeAvatar = () => {
     const colors = ['#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
-    // Simple SVG avatar placeholder
     const svg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='${encodeURIComponent(randomColor)}'/><text x='50' y='50' font-family='Arial' font-size='50' fill='white' text-anchor='middle' dy='.3em'>👤</text></svg>`;
     onUpdateUser({ ...user, avatar: svg });
   };
@@ -62,7 +67,7 @@ export const Profile = ({ user, onUpdateUser }: { user: User, onUpdateUser: (u: 
             <button 
               onClick={randomizeAvatar}
               style={{
-                position: 'absolute', bottom: 0, right: 0, backgroundColor: THEME.primary,
+                position: 'absolute', bottom: 0, [lang === 'ar' ? 'left' : 'right']: 0, backgroundColor: THEME.primary,
                 border: 'none', borderRadius: '50%', width: 30, height: 30, color: 'white', cursor: 'pointer', zIndex: 10
               }}
             >
@@ -78,17 +83,20 @@ export const Profile = ({ user, onUpdateUser }: { user: User, onUpdateUser: (u: 
               onChange={(e) => setEditName(e.target.value)}
               style={{ padding: '8px', borderRadius: '5px', border: 'none' }}
             />
-            <button onClick={handleSave} style={{ padding: '8px', borderRadius: '5px', border: 'none', background: THEME.success, color: 'white' }}>Save</button>
+            <button onClick={handleSave} style={{ padding: '8px', borderRadius: '5px', border: 'none', background: THEME.success, color: 'white' }}>{t('save')}</button>
           </div>
         ) : (
           <div style={{ marginTop: '15px', textAlign: 'center' }}>
-            <h2 style={{ color: 'white', margin: 0 }}>{user.name}</h2>
-            <div style={{ color: '#888', marginTop: '5px' }}>ID: {user.id}</div>
+            <h2 style={{ color: 'white', margin: 0 }}>
+              <bdi>{user.name}</bdi> 
+              {user.isVerified && <span style={{ marginLeft: '5px', color: '#2196F3', fontSize: '18px' }}>✓</span>}
+            </h2>
+            <div style={{ color: '#888', marginTop: '5px' }}>ID: <bdi>{user.id}</bdi></div>
             <button 
               onClick={() => setIsEditing(true)}
               style={{ marginTop: '10px', background: 'transparent', border: `1px solid #666`, color: '#AAA', padding: '4px 12px', borderRadius: '15px', fontSize: '0.8rem', cursor: 'pointer' }}
             >
-              Edit Profile
+              {t('editProfile')}
             </button>
           </div>
         )}
@@ -97,25 +105,25 @@ export const Profile = ({ user, onUpdateUser }: { user: User, onUpdateUser: (u: 
       <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '30px' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ color: THEME.secondary, fontWeight: 'bold', fontSize: '20px' }}>{user.gold}</div>
-          <div style={{ color: '#888', fontSize: '12px' }}>Gold</div>
+          <div style={{ color: '#888', fontSize: '12px' }}>{t('gold')}</div>
         </div>
         <div style={{ textAlign: 'center' }}>
            <div style={{ color: rank.color, fontWeight: 'bold', fontSize: '20px' }}>{rank.name}</div>
-           <div style={{ color: '#888', fontSize: '12px' }}>Rank</div>
+           <div style={{ color: '#888', fontSize: '12px' }}>{t('rank')}</div>
         </div>
         <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => setShowSocial('followers')}>
           <div style={{ color: 'white', fontWeight: 'bold', fontSize: '20px' }}>128</div>
-          <div style={{ color: '#888', fontSize: '12px' }}>Followers</div>
+          <div style={{ color: '#888', fontSize: '12px' }}>{t('followers')}</div>
         </div>
         <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => setShowSocial('following')}>
           <div style={{ color: 'white', fontWeight: 'bold', fontSize: '20px' }}>45</div>
-          <div style={{ color: '#888', fontSize: '12px' }}>Following</div>
+          <div style={{ color: '#888', fontSize: '12px' }}>{t('following')}</div>
         </div>
       </div>
 
       {/* Frame Shop */}
       <div style={{ backgroundColor: THEME.surface, borderRadius: '15px', padding: '20px', marginBottom: '20px' }}>
-        <h3 style={{ color: 'white', marginTop: 0, marginBottom: '15px' }}>Avatar Frames</h3>
+        <h3 style={{ color: 'white', marginTop: 0, marginBottom: '15px' }}>{t('frames')}</h3>
         <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '10px' }}>
           {AVATAR_FRAMES.map(frame => (
              <div 
@@ -142,9 +150,9 @@ export const Profile = ({ user, onUpdateUser }: { user: User, onUpdateUser: (u: 
       </div>
 
       <div style={{ backgroundColor: THEME.surface, borderRadius: '15px', padding: '20px' }}>
-        <h3 style={{ color: 'white', marginTop: 0 }}>Settings</h3>
+        <h3 style={{ color: 'white', marginTop: 0 }}>{t('settings')}</h3>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #333' }}>
-          <span style={{ color: 'white' }}>Show Followers Publicly</span>
+          <span style={{ color: 'white' }}>{t('showSocial')}</span>
           <div 
             onClick={togglePrivacy}
             style={{ 
@@ -154,13 +162,16 @@ export const Profile = ({ user, onUpdateUser }: { user: User, onUpdateUser: (u: 
           >
             <div style={{ 
               width: 16, height: 16, backgroundColor: 'white', borderRadius: '50%', 
-              position: 'absolute', top: 2, left: user.privacy?.showSocialList ? 22 : 2, transition: '0.3s'
+              position: 'absolute', top: 2, [lang === 'ar' ? 'right' : 'left']: user.privacy?.showSocialList ? 22 : 2, transition: '0.3s'
             }} />
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0' }}>
-          <span style={{ color: 'white' }}>Language</span>
-          <span style={{ color: '#888' }}>English ></span>
+          <span style={{ color: 'white' }}>{t('language')}</span>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            <button onClick={() => onSetLang('en')} style={{ opacity: lang === 'en' ? 1 : 0.5 }}>EN</button>
+            <button onClick={() => onSetLang('ar')} style={{ opacity: lang === 'ar' ? 1 : 0.5 }}>عربي</button>
+          </div>
         </div>
       </div>
 
@@ -170,13 +181,13 @@ export const Profile = ({ user, onUpdateUser }: { user: User, onUpdateUser: (u: 
           backgroundColor: THEME.bg, zIndex: 200, display: 'flex', flexDirection: 'column'
         }}>
           <div style={{ padding: '15px', display: 'flex', alignItems: 'center', backgroundColor: THEME.surface }}>
-            <div onClick={() => setShowSocial(null)} style={{ color: 'white', marginRight: '15px', cursor: 'pointer' }}>←</div>
-            <h3 style={{ color: 'white', margin: 0 }}>{showSocial === 'followers' ? 'Followers' : 'Following'}</h3>
+            <div onClick={() => setShowSocial(null)} style={{ color: 'white', marginInlineEnd: '15px', cursor: 'pointer', transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }}>←</div>
+            <h3 style={{ color: 'white', margin: 0 }}>{showSocial === 'followers' ? t('followers') : t('following')}</h3>
           </div>
           <div style={{ padding: '15px' }}>
              {[1, 2, 3].map(i => (
                <div key={i} style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#555', marginRight: '10px' }}></div>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#555', marginInlineEnd: '10px' }}></div>
                   <span style={{ color: 'white' }}>User {Math.floor(Math.random() * 1000)}</span>
                </div>
              ))}

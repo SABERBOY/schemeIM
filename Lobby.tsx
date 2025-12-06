@@ -1,11 +1,18 @@
 
 import React, { useState } from 'react';
-import { User, Room } from './types';
+import { User, Room, SharedProps } from './types';
 import { THEME } from './constants';
 import { Icon } from './Icon';
 import { SocialGraph } from './SocialGraph';
 
-export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Room[], onJoinRoom: (r: Room) => void, onAddRoom: (r: Room) => void, currentUser: User }) => {
+interface LobbyProps extends SharedProps {
+  rooms: Room[];
+  onJoinRoom: (r: Room) => void;
+  onAddRoom: (r: Room) => void;
+  currentUser: User;
+}
+
+export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser, lang, t }: LobbyProps) => {
   const [showCreate, setShowCreate] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [newTitle, setNewTitle] = useState('');
@@ -35,13 +42,13 @@ export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Ro
         <button 
           onClick={() => setViewMode('list')}
           style={{ 
-            position: 'absolute', top: 20, right: 20,
+            position: 'absolute', top: 20, [lang === 'ar' ? 'left' : 'right']: 20,
             backgroundColor: 'rgba(255,255,255,0.2)', color: 'white',
             border: 'none', borderRadius: '20px', padding: '8px 16px',
             cursor: 'pointer', zIndex: 10
           }}
         >
-          Close Map
+          {t('closeMap')}
         </button>
       </div>
     );
@@ -50,7 +57,7 @@ export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Ro
   return (
     <div style={{ padding: '20px', height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ color: 'white', margin: 0 }}>Active Rooms</h2>
+        <h2 style={{ color: 'white', margin: 0 }}>{t('activeRooms')}</h2>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button 
             onClick={() => setViewMode('map')}
@@ -68,7 +75,7 @@ export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Ro
               padding: '8px 16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' 
             }}
           >
-            <Icon name="add" color="black" size={16} /> Create
+            <Icon name="add" color="black" size={16} /> {t('create')}
           </button>
         </div>
       </div>
@@ -84,8 +91,8 @@ export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Ro
             }}
           >
             <div style={{ height: '80px', backgroundColor: '#311B92', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 10, left: 10, fontSize: '24px' }}>{room.country}</div>
-              <div style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.5)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '10px' }}>
+              <div style={{ position: 'absolute', top: 10, [lang === 'ar' ? 'right' : 'left']: 10, fontSize: '24px' }}>{room.country}</div>
+              <div style={{ position: 'absolute', bottom: 10, [lang === 'ar' ? 'left' : 'right']: 10, backgroundColor: 'rgba(0,0,0,0.5)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '10px' }}>
                 👥 {1 + room.users.length}
               </div>
             </div>
@@ -95,7 +102,9 @@ export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Ro
                 {room.host.frame && <img src={room.host.frame} style={{ position: 'absolute', top: '-15%', left: '-15%', width: '130%', height: '130%', pointerEvents: 'none' }} />}
               </div>
               <div style={{ overflow: 'hidden' }}>
-                <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '5px', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{room.title}</div>
+                <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '5px', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <bdi>{room.title}</bdi>
+                </div>
                 <div style={{ display: 'flex', gap: '5px' }}>
                   {room.tags.slice(0, 1).map(tag => (
                     <span key={tag} style={{ fontSize: '10px', color: '#888', backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>{tag}</span>
@@ -114,15 +123,15 @@ export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Ro
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
           <div style={{ backgroundColor: THEME.surface, padding: '20px', borderRadius: '15px', width: '80%' }}>
-            <h3 style={{ color: 'white', marginTop: 0 }}>Create Room</h3>
+            <h3 style={{ color: 'white', marginTop: 0 }}>{t('createRoom')}</h3>
             <input 
-              placeholder="Room Title"
+              placeholder={t('roomTitle')}
               value={newTitle}
               onChange={e => setNewTitle(e.target.value)}
               style={{ width: '100%', padding: '10px', marginBottom: '15px', borderRadius: '5px' }}
             />
             <input 
-              placeholder="Description (Optional)"
+              placeholder={t('desc')}
               value={newDescription}
               onChange={e => setNewDescription(e.target.value)}
               style={{ width: '100%', padding: '10px', marginBottom: '15px', borderRadius: '5px' }}
@@ -142,8 +151,8 @@ export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser }: { rooms: Ro
               ))}
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => setShowCreate(false)} style={{ flex: 1, padding: '10px', borderRadius: '5px' }}>Cancel</button>
-              <button onClick={handleCreate} style={{ flex: 1, padding: '10px', borderRadius: '5px', backgroundColor: THEME.secondary }}>Create</button>
+              <button onClick={() => setShowCreate(false)} style={{ flex: 1, padding: '10px', borderRadius: '5px' }}>{t('cancel')}</button>
+              <button onClick={handleCreate} style={{ flex: 1, padding: '10px', borderRadius: '5px', backgroundColor: THEME.secondary }}>{t('create')}</button>
             </div>
           </div>
         </div>

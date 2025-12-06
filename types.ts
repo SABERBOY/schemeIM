@@ -1,4 +1,6 @@
 
+export type Language = 'en' | 'ar';
+
 export interface User {
   id: string;
   name: string;
@@ -6,6 +8,7 @@ export interface User {
   gold: number;
   frame?: string;
   isHost?: boolean;
+  isVerified?: boolean;
   privacy?: {
     showSocialList: boolean;
   };
@@ -25,6 +28,7 @@ export interface Message {
 export interface Room {
   id: string;
   title: string;
+  description?: string;
   country: string;
   host: User;
   users: User[];
@@ -39,4 +43,9 @@ export interface ChatContact {
   lastMessage: string;
   time: string;
   isAi?: boolean;
+}
+
+export interface SharedProps {
+  lang: Language;
+  t: (key: string) => string;
 }
