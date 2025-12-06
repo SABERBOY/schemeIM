@@ -10,8 +10,10 @@ import { GameCenter } from './GameCenter';
 import { Profile } from './Profile';
 import { Lobby } from './Lobby';
 import { ImageStudio } from './ImageStudio';
+import { Login } from './Login';
 
 const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [tab, setTab] = useState<'home' | 'games' | 'studio' | 'im' | 'me'>('home');
   const [activeRoom, setActiveRoom] = useState<Room | null>(null);
   const [lang, setLang] = useState<Language>('en');
@@ -40,6 +42,22 @@ const App = () => {
 
   const handleSetLang = (l: Language) => {
     setLang(l);
+  }
+
+  const handleLogin = (userUpdates: Partial<User>) => {
+    setCurrentUser(prev => ({ ...prev, ...userUpdates }));
+    setIsLoggedIn(true);
+  };
+  
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setActiveRoom(null);
+    setTab('home');
+  };
+
+  // If not logged in, show Login Screen
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} lang={lang} t={t} onSetLang={handleSetLang} />;
   }
 
   if (activeRoom) {

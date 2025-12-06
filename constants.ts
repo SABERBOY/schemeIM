@@ -1,3 +1,4 @@
+
 export const THEME = {
   bg: '#121212',
   surface: '#1E1E1E',
@@ -5,6 +6,7 @@ export const THEME = {
   secondary: '#FFD700',
   text: '#FFFFFF',
   success: '#4CAF50',
+  error: '#F44336'
 };
 
 export const AVATAR_FRAMES = [
@@ -60,7 +62,18 @@ export const TRANSLATIONS = {
     gold: 'Gold',
     id: 'ID',
     copied: 'Copied',
-    logout: 'Logout'
+    logout: 'Logout',
+    verifiedStatus: 'Verified Status',
+    login: 'Login',
+    welcomeBack: 'Welcome Back',
+    enterPhone: 'Enter Mobile Number',
+    sendCode: 'Send Code',
+    enterCode: 'Enter Verification Code',
+    verify: 'Verify & Login',
+    resendIn: 'Resend in',
+    resend: 'Resend Code',
+    invalidCode: 'Invalid Code',
+    phonePlaceholder: '50 123 4567'
   },
   ar: {
     home: 'الرئيسية',
@@ -107,13 +120,24 @@ export const TRANSLATIONS = {
     gold: 'ذهب',
     id: 'المعرف',
     copied: 'تم النسخ',
-    logout: 'خروج'
+    logout: 'خروج',
+    verifiedStatus: 'حالة التحقق',
+    login: 'تسجيل الدخول',
+    welcomeBack: 'أهلاً بعودتك',
+    enterPhone: 'أدخل رقم الهاتف',
+    sendCode: 'أرسل الرمز',
+    enterCode: 'أدخل رمز التحقق',
+    verify: 'تحقق ودخول',
+    resendIn: 'إعادة إرسال خلال',
+    resend: 'إعادة الإرسال',
+    invalidCode: 'رمز غير صحيح',
+    phonePlaceholder: '50 123 4567'
   }
 };
 
 export const MOCK_CHATS = [
-  { id: 'c1', name: 'Ahmed', avatar: '#FF5722', lastMessage: 'See you in the room!', time: '10:30 AM' },
-  { id: 'c2', name: 'Sarah', avatar: '#2196F3', lastMessage: 'Thanks for the gift 🎁', time: 'Yesterday' },
+  { id: 'c1', name: 'Ahmed', avatar: '#FF5722', lastMessage: 'See you in the room!', time: '10:30 AM', frame: AVATAR_FRAMES[1].image },
+  { id: 'c2', name: 'Sarah', avatar: '#2196F3', lastMessage: 'Thanks for the gift 🎁', time: 'Yesterday', frame: AVATAR_FRAMES[2].image },
 ];
 
 export const GIFTS = [
@@ -124,7 +148,7 @@ export const GIFTS = [
 ];
 
 export const QUICK_REPLIES = [
-  'Hello! 👋', 'Welcome! 🌟', 'Nice voice! 🎤', 'Hahahaha 😂', 'Mashallah ✨'
+  'Hello! 👋', 'Welcome! 🌟', 'Nice voice! 🎤', 'Hahahaha 😂', 'Mashallah ✨', 'Nice to meet you! 🤝'
 ];
 
 export const REACTIONS = ['❤️', '😂', '😮', '👍', '🔥'];

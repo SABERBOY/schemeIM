@@ -183,7 +183,7 @@ export const SocialGraph = ({ lang, t }: SharedProps) => {
   };
   
   // Accurate hit detection
-  const handleClick = (e: React.PointerEvent) => {
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
      if (isDragging.current) return;
      
      const rect = canvasRef.current?.getBoundingClientRect();

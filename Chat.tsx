@@ -254,7 +254,7 @@ export const Messages = ({ currentUser, onNavigate, lang, t }: { currentUser: Us
 
       {/* Mock User Chats */}
       <div style={{ border: '1px solid #333', borderRadius: '12px', overflow: 'hidden' }}>
-        {MOCK_CHATS.map((chat, idx) => (
+        {(MOCK_CHATS as ChatContact[]).map((chat, idx) => (
           <div 
             key={chat.id}
             onClick={() => setSelectedUser(chat)}
