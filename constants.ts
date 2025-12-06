@@ -1,16 +1,18 @@
-
-import { ChatContact } from './types';
-
 export const THEME = {
-  primary: '#7B1FA2', // Deep Purple
-  secondary: '#FFD700', // Gold
   bg: '#121212',
   surface: '#1E1E1E',
+  primary: '#311B92',
+  secondary: '#FFD700',
   text: '#FFFFFF',
-  textSecondary: '#B0B0B0',
-  danger: '#D32F2F',
-  success: '#388E3C'
+  success: '#4CAF50',
 };
+
+export const AVATAR_FRAMES = [
+  { id: '1', image: '', name: 'None' },
+  { id: '2', image: 'https://cdn-icons-png.flaticon.com/512/4315/4315445.png', name: 'Gold' },
+  { id: '3', image: 'https://cdn-icons-png.flaticon.com/512/4315/4315457.png', name: 'Platinum' },
+  { id: '4', image: 'https://cdn-icons-png.flaticon.com/512/4315/4315467.png', name: 'Diamond' },
+];
 
 export const TRANSLATIONS = {
   en: {
@@ -21,143 +23,122 @@ export const TRANSLATIONS = {
     me: 'Me',
     activeRooms: 'Active Rooms',
     create: 'Create',
-    createRoom: 'Create Room',
     roomTitle: 'Room Title',
-    desc: 'Description (Optional)',
+    desc: 'Description',
     cancel: 'Cancel',
+    createRoom: 'Create Room',
+    gameCenter: 'Game Center',
+    back: 'Back',
+    loading: 'Loading',
+    playNow: 'Play Now',
+    aiStudio: 'AI Image Studio',
+    tapToUpload: 'Tap to upload image',
+    magicProgress: 'Performing Magic...',
+    promptPlaceholder: 'Describe changes...',
+    go: 'Go',
+    messages: 'Messages',
+    askMe: 'Ask me anything...',
+    now: 'Now',
     saySomething: 'Say something...',
     sendGift: 'Send Gift',
     roomUsers: 'Room Users',
     host: 'Host',
     guest: 'Guest',
-    settings: 'Settings',
-    editProfile: 'Edit Profile',
-    save: 'Save',
-    gold: 'Gold',
-    rank: 'Rank',
-    followers: 'Followers',
-    following: 'Following',
-    frames: 'Avatar Frames',
-    showSocial: 'Show Followers Publicly',
-    language: 'Language',
-    aiStudio: 'AI Studio',
-    tapToUpload: 'Tap to Upload Image',
-    magicProgress: 'Magic in progress...',
-    promptPlaceholder: 'e.g., Add a retro filter...',
-    go: 'Go',
-    gameCenter: 'Game Center',
-    playNow: 'Play Now',
-    back: 'Back',
-    loading: 'Loading',
-    messages: 'Messages',
-    askMe: 'Ask me anything...',
-    now: 'Now',
-    typeMessage: 'Type a message...',
-    mapView: 'Map View',
-    listView: 'List View',
-    closeMap: 'Close Map',
     globalNetwork: 'Global Network',
-    swipeRotate: 'Swipe to rotate • Tap nodes for info',
+    swipeRotate: 'Swipe to rotate',
     connections: 'Connections',
     sharedInterest: 'Shared Interest',
+    closeMap: 'Close Map',
+    profile: 'Profile',
+    editProfile: 'Edit Profile',
+    wallet: 'Wallet',
+    store: 'Store',
+    settings: 'Settings',
+    language: 'Language',
+    privacy: 'Privacy',
+    save: 'Save',
+    gold: 'Gold',
+    id: 'ID',
+    copied: 'Copied',
+    logout: 'Logout'
   },
   ar: {
     home: 'الرئيسية',
     games: 'ألعاب',
-    studio: 'ستوديو',
-    im: 'رسائل',
+    studio: 'استوديو',
+    im: 'محادثات',
     me: 'أنا',
     activeRooms: 'غرف نشطة',
     create: 'إنشاء',
-    createRoom: 'إنشاء غرفة',
     roomTitle: 'عنوان الغرفة',
-    desc: 'وصف (اختياري)',
+    desc: 'الوصف',
     cancel: 'إلغاء',
-    saySomething: 'قل شيئاً...',
-    sendGift: 'إرسال هدية',
-    roomUsers: 'المستخدمين',
-    host: 'مضيف',
-    guest: 'ضيف',
-    settings: 'إعدادات',
-    editProfile: 'تعديل الملف',
-    save: 'حفظ',
-    gold: 'ذهب',
-    rank: 'رتبة',
-    followers: 'متابعون',
-    following: 'يتابع',
-    frames: 'إطارات',
-    showSocial: 'إظهار المتابعين للعامة',
-    language: 'اللغة',
-    aiStudio: 'ستوديو الذكاء الاصطناعي',
-    tapToUpload: 'اضغط لرفع صورة',
-    magicProgress: 'جاري السحر...',
-    promptPlaceholder: 'مثلا: أضف فلتر قديم...',
-    go: 'انطلق',
+    createRoom: 'إنشاء غرفة',
     gameCenter: 'مركز الألعاب',
-    playNow: 'العب الآن',
     back: 'رجوع',
     loading: 'جاري التحميل',
+    playNow: 'العب الآن',
+    aiStudio: 'استوديو الذكاء الاصطناعي',
+    tapToUpload: 'اضغط لرفع صورة',
+    magicProgress: 'جاري تنفيذ السحر...',
+    promptPlaceholder: 'صف التغييرات...',
+    go: 'انطلق',
     messages: 'الرسائل',
     askMe: 'اسألني أي شيء...',
     now: 'الآن',
-    typeMessage: 'اكتب رسالة...',
-    mapView: 'خريطة',
-    listView: 'قائمة',
-    closeMap: 'إغلاق الخريطة',
+    saySomething: 'قل شيئاً...',
+    sendGift: 'إرسال هدية',
+    roomUsers: 'المستخدمين',
+    host: 'المضيف',
+    guest: 'ضيف',
     globalNetwork: 'الشبكة العالمية',
-    swipeRotate: 'اسحب للتدوير • اضغط على العقد للتفاصيل',
+    swipeRotate: 'اسحب للتدوير',
     connections: 'اتصالات',
     sharedInterest: 'اهتمامات مشتركة',
+    closeMap: 'إغلاق الخريطة',
+    profile: 'الملف الشخصي',
+    editProfile: 'تعديل الملف',
+    wallet: 'المحفظة',
+    store: 'المتجر',
+    settings: 'الإعدادات',
+    language: 'اللغة',
+    privacy: 'الخصوصية',
+    save: 'حفظ',
+    gold: 'ذهب',
+    id: 'المعرف',
+    copied: 'تم النسخ',
+    logout: 'خروج'
   }
 };
 
+export const MOCK_CHATS = [
+  { id: 'c1', name: 'Ahmed', avatar: '#FF5722', lastMessage: 'See you in the room!', time: '10:30 AM' },
+  { id: 'c2', name: 'Sarah', avatar: '#2196F3', lastMessage: 'Thanks for the gift 🎁', time: 'Yesterday' },
+];
+
 export const GIFTS = [
-  { id: 'rose', name: 'Rose', icon: '🌹', cost: 1 },
-  { id: 'tea', name: 'Mint Tea', icon: '🍵', cost: 10 },
-  { id: 'perfume', name: 'Oud', icon: '⚱️', cost: 50 },
-  { id: 'camel', name: 'Camel', icon: '🐪', cost: 100 },
-  { id: 'palace', name: 'Palace', icon: '🕌', cost: 1000 },
-];
-
-export const AVATAR_FRAMES = [
-  { id: 'none', name: 'Default', image: '' },
-  { id: 'gold_luxury', name: 'Gold Luxury', image: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%23FFD700'/><stop offset='50%' stop-color='%23FFA500'/><stop offset='100%' stop-color='%23FFD700'/></linearGradient></defs><circle cx='50' cy='50' r='46' fill='none' stroke='url(%23g)' stroke-width='6'/><circle cx='50' cy='50' r='46' fill='none' stroke='white' stroke-width='1' stroke-dasharray='2 5'/></svg>` },
-  { id: 'neon_blue', name: 'Neon Blue', image: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='47' fill='none' stroke='%2300FFFF' stroke-width='4' filter='drop-shadow(0 0 5px %2300FFFF)'/></svg>` },
-  { id: 'royal_purple', name: 'Royal', image: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='none' stroke='%239C27B0' stroke-width='6'/><circle cx='50' cy='0' r='5' fill='%23FFD700'/><circle cx='50' cy='100' r='5' fill='%23FFD700'/></svg>` },
-  { id: 'rose_garden', name: 'Rose Garden', image: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='none' stroke='%23E91E63' stroke-width='4'/><circle cx='15' cy='50' r='8' fill='%23E91E63'/><circle cx='85' cy='50' r='8' fill='%23E91E63'/></svg>` },
-];
-
-export const GAMES = [
-  { id: 'ludo', name: 'Ludo Star', icon: '🎲', color: '#E91E63' },
-  { id: 'domino', name: 'Domino Pro', icon: '🀄', color: '#2196F3' },
-  { id: 'carrom', name: 'Carrom Disc', icon: '⚪', color: '#FF9800' },
-  { id: 'uno', name: 'Uno Classic', icon: '🃏', color: '#4CAF50' },
+  { id: 'g1', name: 'Rose', icon: '🌹', cost: 10 },
+  { id: 'g2', name: 'Heart', icon: '❤️', cost: 50 },
+  { id: 'g3', name: 'Car', icon: '🏎️', cost: 500 },
+  { id: 'g4', name: 'Rocket', icon: '🚀', cost: 1000 },
 ];
 
 export const QUICK_REPLIES = [
-  "Hello! 👋",
-  "Nice to meet you! 🤝",
-  "Salam! 👋",
-  "Mashallah ✨",
-  "Habibi! ❤️",
-  "Yalla! 🚀",
-  "Shukran 🙏",
-  "Welcome 🌹",
-  "Nice voice 🎤",
-  "Gift me? 🎁"
+  'Hello! 👋', 'Welcome! 🌟', 'Nice voice! 🎤', 'Hahahaha 😂', 'Mashallah ✨'
 ];
 
-export const REACTIONS = ['❤️', '😂', '👍', '🔥', '😮', '😢'];
+export const REACTIONS = ['❤️', '😂', '😮', '👍', '🔥'];
+
+export const GAMES = [
+  { id: 'game1', name: 'Ludo Star', icon: '🎲', color: '#4CAF50' },
+  { id: 'game2', name: 'Dominoes', icon: '🁙', color: '#FF5722' },
+  { id: 'game3', name: 'Uno', icon: '🃏', color: '#F44336' },
+  { id: 'game4', name: 'Billiards', icon: '🎱', color: '#2196F3' },
+];
 
 export const getRank = (gold: number) => {
-  if (gold < 100) return { name: 'Bronze', color: '#CD7F32' };
-  if (gold < 500) return { name: 'Silver', color: '#C0C0C0' };
-  if (gold < 2000) return { name: 'Gold', color: '#FFD700' };
-  return { name: 'Platinum', color: '#E5E4E2' };
+  if (gold > 10000) return { name: 'Emperor', color: '#FFD700' };
+  if (gold > 5000) return { name: 'King', color: '#C0C0C0' };
+  if (gold > 1000) return { name: 'Noble', color: '#CD7F32' };
+  return { name: 'Citizen', color: '#FFFFFF' };
 };
-
-export const MOCK_CHATS: ChatContact[] = [
-  { id: 'u1', name: 'Habibi User 1', avatar: '#E91E63', frame: AVATAR_FRAMES[1].image, lastMessage: 'Salam! How are you doing?', time: '12:30 PM' },
-  { id: 'u2', name: 'Habibi User 2', avatar: '#2196F3', frame: AVATAR_FRAMES[2].image, lastMessage: 'Coming to the room?', time: '11:45 AM' },
-  { id: 'u3', name: 'Habibi User 3', avatar: '#FF9800', lastMessage: 'Thanks for the gift!', time: 'Yesterday' },
-];
