@@ -55,7 +55,11 @@ export const TRANSLATIONS = {
     typeMessage: 'Type a message...',
     mapView: 'Map View',
     listView: 'List View',
-    closeMap: 'Close Map'
+    closeMap: 'Close Map',
+    globalNetwork: 'Global Network',
+    swipeRotate: 'Swipe to rotate • Tap nodes for info',
+    connections: 'Connections',
+    sharedInterest: 'Shared Interest',
   },
   ar: {
     home: 'الرئيسية',
@@ -99,7 +103,11 @@ export const TRANSLATIONS = {
     typeMessage: 'اكتب رسالة...',
     mapView: 'خريطة',
     listView: 'قائمة',
-    closeMap: 'إغلاق الخريطة'
+    closeMap: 'إغلاق الخريطة',
+    globalNetwork: 'الشبكة العالمية',
+    swipeRotate: 'اسحب للتدوير • اضغط على العقد للتفاصيل',
+    connections: 'اتصالات',
+    sharedInterest: 'اهتمامات مشتركة',
   }
 };
 
@@ -140,6 +148,13 @@ export const QUICK_REPLIES = [
 ];
 
 export const REACTIONS = ['❤️', '😂', '👍', '🔥', '😮', '😢'];
+
+export const getRank = (gold: number) => {
+  if (gold < 100) return { name: 'Bronze', color: '#CD7F32' };
+  if (gold < 500) return { name: 'Silver', color: '#C0C0C0' };
+  if (gold < 2000) return { name: 'Gold', color: '#FFD700' };
+  return { name: 'Platinum', color: '#E5E4E2' };
+};
 
 export const MOCK_CHATS: ChatContact[] = [
   { id: 'u1', name: 'Habibi User 1', avatar: '#E91E63', frame: AVATAR_FRAMES[1].image, lastMessage: 'Salam! How are you doing?', time: '12:30 PM' },

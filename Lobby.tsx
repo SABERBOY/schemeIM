@@ -38,7 +38,7 @@ export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser, lang, t }: Lo
   if (viewMode === 'map') {
     return (
       <div style={{ height: '100%', position: 'relative' }}>
-        <SocialGraph />
+        <SocialGraph lang={lang} t={t} />
         <button 
           onClick={() => setViewMode('list')}
           style={{ 

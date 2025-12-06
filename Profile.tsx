@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { User, SharedProps, Language } from './types';
-import { THEME, AVATAR_FRAMES } from './constants';
+import { THEME, AVATAR_FRAMES, getRank } from './constants';
 
 interface ProfileProps extends SharedProps {
   user: User;
@@ -13,13 +13,6 @@ export const Profile = ({ user, onUpdateUser, lang, t, onSetLang }: ProfileProps
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(user.name);
   const [showSocial, setShowSocial] = useState<'followers'|'following'|null>(null);
-
-  const getRank = (gold: number) => {
-    if (gold < 100) return { name: 'Bronze', color: '#CD7F32' };
-    if (gold < 500) return { name: 'Silver', color: '#C0C0C0' };
-    if (gold < 2000) return { name: 'Gold', color: '#FFD700' };
-    return { name: 'Platinum', color: '#E5E4E2' };
-  };
 
   const rank = getRank(user.gold);
 

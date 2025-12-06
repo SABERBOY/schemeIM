@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Room, Message, SharedProps } from './types';
-import { THEME, GIFTS, QUICK_REPLIES, REACTIONS } from './constants';
+import { THEME, GIFTS, QUICK_REPLIES, REACTIONS, getRank } from './constants';
 import { Icon } from './Icon';
 
 interface VoiceRoomProps extends SharedProps {
@@ -97,6 +97,9 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceR
   const chatBg = highContrast ? '#000000' : 'rgba(0,0,0,0.5)';
   const chatText = highContrast ? '#FFFF00' : 'white';
 
+  const hostRank = getRank(room.host.gold);
+  const userRank = getRank(user.gold);
+
   return (
     <div style={{
       height: '100%', display: 'flex', flexDirection: 'column',
@@ -165,7 +168,10 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceR
               backgroundColor: THEME.secondary, borderRadius: '50%', padding: 2, fontSize: '10px'
             }}>👑</div>
           </div>
-          <span style={{ color: 'white', fontSize: '12px', marginTop: 5 }}><bdi>{room.host.name}</bdi></span>
+          <div style={{ marginTop: 5, textAlign: 'center' }}>
+            <span style={{ color: 'white', fontSize: '12px', display: 'block' }}><bdi>{room.host.name}</bdi></span>
+            <span style={{ color: hostRank.color, fontSize: '10px', border: `1px solid ${hostRank.color}`, borderRadius: '4px', padding: '0 3px' }}>{hostRank.name}</span>
+          </div>
         </div>
         
         {/* Guest Seats (1-8) */}
@@ -213,7 +219,10 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceR
                   {room.host.frame && <img src={room.host.frame} style={{ position: 'absolute', top: '-15%', left: '-15%', width: '130%', height: '130%', pointerEvents: 'none' }} />}
                 </div>
                 <div>
-                  <div style={{ color: THEME.secondary, fontWeight: 'bold' }}><bdi>{room.host.name}</bdi></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <div style={{ color: THEME.secondary, fontWeight: 'bold' }}><bdi>{room.host.name}</bdi></div>
+                    <span style={{ color: hostRank.color, fontSize: '9px', border: `1px solid ${hostRank.color}`, borderRadius: '4px', padding: '0 3px' }}>{hostRank.name}</span>
+                  </div>
                   <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('host')} • 👑 Owner</div>
                 </div>
               </div>
@@ -225,7 +234,10 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceR
                   {user.frame && <img src={user.frame} style={{ position: 'absolute', top: '-15%', left: '-15%', width: '130%', height: '130%', pointerEvents: 'none' }} />}
                 </div>
                 <div>
-                  <div style={{ color: 'white' }}><bdi>{user.name}</bdi> (You)</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <div style={{ color: 'white' }}><bdi>{user.name}</bdi> (You)</div>
+                    <span style={{ color: userRank.color, fontSize: '9px', border: `1px solid ${userRank.color}`, borderRadius: '4px', padding: '0 3px' }}>{userRank.name}</span>
+                  </div>
                   <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('guest')} • Lv. 5</div>
                 </div>
               </div>
@@ -241,18 +253,24 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceR
                 </div>
               ))}
 
-              {room.users.map(u => (
-                <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ position: 'relative', width: 40, height: 40 }}>
-                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `url(${u.avatar}) center/cover` }} />
-                    {u.frame && <img src={u.frame} style={{ position: 'absolute', top: '-15%', left: '-15%', width: '130%', height: '130%', pointerEvents: 'none' }} />}
+              {room.users.map(u => {
+                const uRank = getRank(u.gold);
+                return (
+                  <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ position: 'relative', width: 40, height: 40 }}>
+                      <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `url(${u.avatar}) center/cover` }} />
+                      {u.frame && <img src={u.frame} style={{ position: 'absolute', top: '-15%', left: '-15%', width: '130%', height: '130%', pointerEvents: 'none' }} />}
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <div style={{ color: 'white' }}><bdi>{u.name}</bdi></div>
+                        <span style={{ color: uRank.color, fontSize: '9px', border: `1px solid ${uRank.color}`, borderRadius: '4px', padding: '0 3px' }}>{uRank.name}</span>
+                      </div>
+                      <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('guest')}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ color: 'white' }}><bdi>{u.name}</bdi></div>
-                    <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('guest')}</div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </>
