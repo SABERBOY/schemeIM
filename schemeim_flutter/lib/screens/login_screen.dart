@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants.dart';
+import '../../models/user.dart';
 import '../../providers/user_provider.dart';
 import '../../services/api_service.dart';
 
@@ -46,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     
     await ApiService.auth.sendOtp(_phoneController.text);
-    
+
     if (mounted) {
       setState(() {
         _loading = false;
@@ -54,6 +55,16 @@ class _LoginScreenState extends State<LoginScreen> {
       });
       _startTimer();
     }
+    // Simulate API call
+    // Future.delayed(const Duration(seconds: 1, milliseconds: 500), () {
+    //   if (mounted) {
+    //     setState(() {
+    //       _loading = false;
+    //       _step = 2;
+    //     });
+    //     _startTimer();
+    //   }
+    // });
   }
 
   Future<void> _handleVerify() async {
@@ -62,10 +73,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
     await Provider.of<UserProvider>(context, listen: false)
         .login(_phoneController.text, _otpController.text);
-    
+
     if (mounted) {
       setState(() => _loading = false);
     }
+    // Simulate API call
+    // Future.delayed(const Duration(seconds: 1, milliseconds: 500), () {
+    //   if (mounted) {
+    //     setState(() => _loading = false);
+    //     final user = User(
+    //       id: 'user_${DateTime.now().millisecondsSinceEpoch}',
+    //       name: 'User ${_phoneController.text.length >= 4 ? _phoneController.text.substring(_phoneController.text.length - 4) : _phoneController.text}',
+    //       avatar: 'https://cdn-icons-png.flaticon.com/512/147/147142.png',
+    //       gold: 100,
+    //       privacy: UserPrivacy(showSocialList: true),
+    //     );
+    //     Provider.of<UserProvider>(context, listen: false).login(user);
+    //   }
+    // });
   }
 
   void _handleResend() {
@@ -222,8 +247,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.all(15),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ).copyWith(
-                backgroundColor: MaterialStateProperty.resolveWith((states) {
-                  if (states.contains(MaterialState.disabled)) return Colors.grey.withOpacity(0.3);
+                // backgroundColor: MaterialStateProperty.resolveWith((states) {
+                //   if (states.contains(MaterialState.disabled)) return Colors.grey.withOpacity(0.3);
+                backgroundColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.disabled)) return Colors.grey.withOpacity(0.3);
                   return null; // Defer to background decoration
                 }),
               ),
