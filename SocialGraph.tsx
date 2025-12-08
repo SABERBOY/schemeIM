@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { THEME } from './constants';
 import { Icon } from './Icon';
+import { SharedProps } from './types';
 
 interface Point3D {
   x: number;
@@ -13,13 +14,14 @@ interface Point3D {
   connections: number[]; // Indices of connected nodes
 }
 
-export const SocialGraph = () => {
+export const SocialGraph = ({ lang, t }: SharedProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedUser, setSelectedUser] = useState<Point3D | null>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const isDragging = useRef(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
   const pointsRef = useRef<Point3D[]>([]);
+  const projectedPointsRef = useRef<any[]>([]);
 
   // Generate sphere points
   useEffect(() => {
@@ -106,6 +108,9 @@ export const SocialGraph = () => {
 
       // Sort by Z for depth sorting (draw back to front)
       projectedPoints.sort((a, b) => a.z - b.z);
+      
+      // Store for hit testing
+      projectedPointsRef.current = projectedPoints;
 
       // Draw Lines
       ctx.strokeStyle = 'rgba(255, 215, 0, 0.2)'; // Gold lines
@@ -113,8 +118,6 @@ export const SocialGraph = () => {
       projectedPoints.forEach(p => {
          p.connections.forEach(targetIdx => {
              // Find the projected point of the connection
-             // NOTE: This is O(N^2) effectively inside the loop, but N=50 is tiny.
-             // A better way is to map original indices to projected indices, but simple find works for 50.
              const target = projectedPoints.find(pp => pp.id === pointsRef.current[targetIdx].id);
              if (target) {
                  ctx.beginPath();
@@ -179,26 +182,28 @@ export const SocialGraph = () => {
     isDragging.current = false;
   };
   
-  // Simple hit detection on click
-  const handleClick = (e: React.PointerEvent) => {
-     if (isDragging.current) return; // Don't click if we dragged
+  // Accurate hit detection
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+     if (isDragging.current) return;
      
      const rect = canvasRef.current?.getBoundingClientRect();
      if (!rect) return;
      const clickX = e.clientX - rect.left;
      const clickY = e.clientY - rect.top;
 
-     // Re-calculate projection to find closest node (simplified logic duplication)
-     // Ideally we store the last projected frame in a ref
-     // For this demo, we assume the render loop is fast enough or use simple approx
-     
-     // Quick distance check against simulated projection (simplified for click reliability)
-     // A robust app would use the projected array from the render loop via Ref.
-     // For now, let's just create a nice visual effect interaction:
-     
-     // Mock selection for demonstration
-     const randomUser = pointsRef.current[Math.floor(Math.random() * pointsRef.current.length)];
-     setSelectedUser(randomUser);
+     // Iterate reversed (front to back) to find the top-most node
+     const clickedNode = [...projectedPointsRef.current].reverse().find(p => {
+         const dx = clickX - p.x2d;
+         const dy = clickY - p.y2d;
+         const hitRadius = (8 * p.scale) + 10; // Visual radius + padding
+         return (dx*dx + dy*dy) < (hitRadius * hitRadius);
+     });
+
+     if (clickedNode) {
+         setSelectedUser(clickedNode);
+     } else {
+         setSelectedUser(null);
+     }
   };
 
   return (
@@ -216,8 +221,8 @@ export const SocialGraph = () => {
       />
       
       <div style={{ position: 'absolute', top: 20, left: 20, color: 'white', pointerEvents: 'none' }}>
-         <h3>Global Network</h3>
-         <p style={{ fontSize: '12px', opacity: 0.7 }}>Swipe to rotate • Tap nodes for info</p>
+         <h3>{t('globalNetwork')}</h3>
+         <p style={{ fontSize: '12px', opacity: 0.7 }}>{t('swipeRotate')}</p>
       </div>
 
       {selectedUser && (
@@ -236,12 +241,12 @@ export const SocialGraph = () => {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ color: 'white', fontWeight: 'bold' }}>{selectedUser.name}</div>
-            <div style={{ color: '#aaa', fontSize: '12px' }}>Connections: {selectedUser.connections.length}</div>
-            <div style={{ color: THEME.secondary, fontSize: '12px' }}>Shared Interest: Music, Tech</div>
+            <div style={{ color: '#aaa', fontSize: '12px' }}>{t('connections')}: {selectedUser.connections.length}</div>
+            <div style={{ color: THEME.secondary, fontSize: '12px' }}>{t('sharedInterest')}: Music, Tech</div>
           </div>
           <button 
             onClick={() => setSelectedUser(null)}
-            style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px' }}
+            style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer' }}
           >
             ×
           </button>

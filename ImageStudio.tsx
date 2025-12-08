@@ -3,8 +3,9 @@ import React, { useState, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { THEME } from './constants';
 import { Icon } from './Icon';
+import { SharedProps } from './types';
 
-export const ImageStudio = () => {
+export const ImageStudio = ({ lang, t }: SharedProps) => {
   const [prompt, setPrompt] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -82,7 +83,7 @@ export const ImageStudio = () => {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: THEME.bg, padding: '20px' }}>
       <h2 style={{ color: 'white', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <Icon name="magic" color={THEME.secondary} size={28} />
-        AI Studio
+        {t('aiStudio')}
       </h2>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto' }}>
@@ -99,7 +100,7 @@ export const ImageStudio = () => {
                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', color: '#888' }}
              >
                 <Icon name="add" size={48} color="#555" />
-                <span style={{ marginTop: '10px' }}>Tap to Upload Image</span>
+                <span style={{ marginTop: '10px' }}>{t('tapToUpload')}</span>
              </div>
           ) : (
              <div style={{ display: 'flex', width: '100%', height: '100%' }}>
@@ -123,7 +124,7 @@ export const ImageStudio = () => {
                color: THEME.secondary, flexDirection: 'column'
              }}>
                  <div style={{ fontSize: '30px', animation: 'spin 1s linear infinite' }}>✨</div>
-                 <span style={{ marginTop: '10px' }}>Magic in progress...</span>
+                 <span style={{ marginTop: '10px' }}>{t('magicProgress')}</span>
              </div>
           )}
         </div>
@@ -156,7 +157,7 @@ export const ImageStudio = () => {
                 <input 
                   value={prompt}
                   onChange={e => setPrompt(e.target.value)}
-                  placeholder="e.g., Add a retro filter, Remove background..."
+                  placeholder={t('promptPlaceholder')}
                   style={{ 
                     flex: 1, padding: '12px', borderRadius: '10px', border: 'none', 
                     backgroundColor: '#333', color: 'white' 
@@ -171,7 +172,7 @@ export const ImageStudio = () => {
                     cursor: (!selectedImage || !prompt.trim() || loading) ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  Go
+                  {t('go')}
                 </button>
             </div>
             <div style={{ display: 'flex', gap: '8px', marginTop: '10px', overflowX: 'auto', paddingBottom: '5px' }}>

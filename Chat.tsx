@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { User, ChatContact } from './types';
+import { User, ChatContact, SharedProps } from './types';
 import { THEME, MOCK_CHATS } from './constants';
 import { Icon } from './Icon';
 
-export const UserChat = ({ user, onBack }: { user: ChatContact; onBack: () => void }) => {
+export const UserChat = ({ user, onBack, lang }: { user: ChatContact; onBack: () => void } & SharedProps) => {
   const [messages, setMessages] = useState<{id: string, text: string, sender: 'me' | 'them'}[]>([
     { id: '1', text: user.lastMessage, sender: 'them' }
   ]);
@@ -43,7 +43,7 @@ export const UserChat = ({ user, onBack }: { user: ChatContact; onBack: () => vo
         padding: '15px', display: 'flex', alignItems: 'center', gap: '15px',
         backgroundColor: THEME.surface, boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
       }}>
-        <div onClick={onBack} style={{ cursor: 'pointer' }}>
+        <div onClick={onBack} style={{ cursor: 'pointer', transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }}>
           <Icon name="close" />
         </div>
         <div style={{ position: 'relative', width: 40, height: 40 }}>
@@ -55,7 +55,9 @@ export const UserChat = ({ user, onBack }: { user: ChatContact; onBack: () => vo
           </div>
           {user.frame && <img src={user.frame} style={{ position: 'absolute', top: '-10%', left: '-10%', width: '120%', height: '120%', pointerEvents: 'none' }} />}
         </div>
-        <span style={{ color: THEME.text, fontWeight: 'bold', fontSize: '1.1rem' }}>{user.name}</span>
+        <span style={{ color: THEME.text, fontWeight: 'bold', fontSize: '1.1rem' }}>
+          <bdi>{user.name}</bdi>
+        </span>
       </div>
 
       <div ref={scrollRef} style={{
@@ -71,7 +73,7 @@ export const UserChat = ({ user, onBack }: { user: ChatContact; onBack: () => vo
             maxWidth: '70%',
             fontSize: '0.95rem'
           }}>
-            {msg.text}
+            <bdi>{msg.text}</bdi>
           </div>
         ))}
       </div>
@@ -99,7 +101,7 @@ export const UserChat = ({ user, onBack }: { user: ChatContact; onBack: () => vo
   );
 };
 
-export const AIChat = ({ currentUser, onBack }: { currentUser: User, onBack: () => void }) => {
+export const AIChat = ({ currentUser, onBack, lang, t }: { currentUser: User, onBack: () => void } & SharedProps) => {
   const [messages, setMessages] = useState<{role: string, text: string}[]>([
     { role: 'model', text: `Salam ${currentUser.name}! I am your AI Assistant. How can I help you today?` }
   ]);
@@ -147,7 +149,7 @@ export const AIChat = ({ currentUser, onBack }: { currentUser: User, onBack: () 
         padding: '15px', backgroundColor: THEME.surface, display: 'flex', alignItems: 'center', gap: '15px',
         boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
       }}>
-         <div onClick={onBack} style={{ cursor: 'pointer' }}>
+         <div onClick={onBack} style={{ cursor: 'pointer', transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }}>
           <Icon name="close" />
         </div>
         <div style={{
@@ -167,10 +169,10 @@ export const AIChat = ({ currentUser, onBack }: { currentUser: User, onBack: () 
             color: 'white', padding: '10px 15px', borderRadius: '15px',
             maxWidth: '80%'
           }}>
-            {m.text}
+            <bdi>{m.text}</bdi>
           </div>
         ))}
-        {loading && <div style={{ color: '#888', fontStyle: 'italic', marginLeft: '10px' }}>AI is typing...</div>}
+        {loading && <div style={{ color: '#888', fontStyle: 'italic', marginInlineStart: '10px' }}>AI is typing...</div>}
       </div>
 
       <div style={{ padding: '10px', backgroundColor: THEME.surface, display: 'flex', gap: '10px' }}>
@@ -178,7 +180,7 @@ export const AIChat = ({ currentUser, onBack }: { currentUser: User, onBack: () 
           value={input} 
           onChange={e => setInput(e.target.value)} 
           onKeyDown={e => e.key === 'Enter' && handleSend()}
-          placeholder="Ask me anything..."
+          placeholder={t('askMe')}
           style={{
             flex: 1, padding: '12px', borderRadius: '25px', border: 'none',
             backgroundColor: '#333', color: 'white', outline: 'none'
@@ -195,16 +197,16 @@ export const AIChat = ({ currentUser, onBack }: { currentUser: User, onBack: () 
   );
 };
 
-export const Messages = ({ currentUser, onNavigate }: { currentUser: User, onNavigate: (route: string) => void }) => {
+export const Messages = ({ currentUser, onNavigate, lang, t }: { currentUser: User, onNavigate: (route: string) => void } & SharedProps) => {
   const [selectedUser, setSelectedUser] = useState<ChatContact | null>(null);
   const [isAiChat, setIsAiChat] = useState(false);
 
   if (isAiChat) {
-    return <AIChat currentUser={currentUser} onBack={() => setIsAiChat(false)} />;
+    return <AIChat currentUser={currentUser} onBack={() => setIsAiChat(false)} lang={lang} t={t} />;
   }
 
   if (selectedUser) {
-    return <UserChat user={selectedUser} onBack={() => setSelectedUser(null)} />;
+    return <UserChat user={selectedUser} onBack={() => setSelectedUser(null)} lang={lang} t={t} />;
   }
 
   return (
@@ -220,11 +222,11 @@ export const Messages = ({ currentUser, onNavigate }: { currentUser: User, onNav
         marginBottom: '20px',
         borderLeft: '4px solid #2196F3'
       }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#2196F3', marginRight: '10px' }}></div>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#2196F3', marginInlineEnd: '10px' }}></div>
         <span style={{ color: '#AAA', fontSize: '0.9rem' }}>RongCloud IM Connected</span>
       </div>
 
-      <h2 style={{ color: 'white', marginBottom: '15px' }}>Messages</h2>
+      <h2 style={{ color: 'white', marginBottom: '15px' }}>{t('messages')}</h2>
 
       {/* AI Assistant Row */}
       <div 
@@ -239,20 +241,20 @@ export const Messages = ({ currentUser, onNavigate }: { currentUser: User, onNav
           width: 50, height: 50, borderRadius: '50%',
           background: 'linear-gradient(135deg, #6200EA, #B388FF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          marginRight: '15px'
+          marginInlineEnd: '15px'
         }}>
           <Icon name="robot" size={28} />
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ color: THEME.secondary, fontWeight: 'bold', marginBottom: '4px' }}>AI Assistant</div>
-          <div style={{ color: '#888', fontSize: '0.9rem' }}>Ask me anything...</div>
+          <div style={{ color: '#888', fontSize: '0.9rem' }}>{t('askMe')}</div>
         </div>
-        <span style={{ color: '#666', fontSize: '0.8rem' }}>Now</span>
+        <span style={{ color: '#666', fontSize: '0.8rem' }}>{t('now')}</span>
       </div>
 
       {/* Mock User Chats */}
       <div style={{ border: '1px solid #333', borderRadius: '12px', overflow: 'hidden' }}>
-        {MOCK_CHATS.map((chat, idx) => (
+        {(MOCK_CHATS as ChatContact[]).map((chat, idx) => (
           <div 
             key={chat.id}
             onClick={() => setSelectedUser(chat)}
@@ -266,7 +268,7 @@ export const Messages = ({ currentUser, onNavigate }: { currentUser: User, onNav
             <div style={{
               width: 50, height: 50, borderRadius: '50%',
               backgroundColor: '#333',
-              marginRight: '15px',
+              marginInlineEnd: '15px',
               position: 'relative'
             }}>
               {/* Avatar placeholder color */}
@@ -274,9 +276,9 @@ export const Messages = ({ currentUser, onNavigate }: { currentUser: User, onNav
               {chat.frame && <img src={chat.frame} style={{ position: 'absolute', top: '-10%', left: '-10%', width: '120%', height: '120%', pointerEvents: 'none' }} />}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '4px' }}>{chat.name}</div>
+              <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '4px' }}><bdi>{chat.name}</bdi></div>
               <div style={{ color: '#888', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px' }}>
-                {chat.lastMessage}
+                <bdi>{chat.lastMessage}</bdi>
               </div>
             </div>
             <span style={{ color: '#666', fontSize: '0.8rem' }}>{chat.time}</span>
