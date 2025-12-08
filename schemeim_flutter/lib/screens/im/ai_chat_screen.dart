@@ -23,7 +23,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
   @override
   void initState() {
     super.initState();
-    _messages.add({'role': 'model', 'text': 'Salam ${widget.currentUser.name}! I am your AI Assistant. How can I help you today?'});
+    _messages.add({'role': 'model', 'text': 'Salam ${widget.currentUser.displayName}! I am your AI Assistant. How can I help you today?'});
   }
 
   Future<void> _sendMessage() async {

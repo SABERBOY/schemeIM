@@ -1,18 +1,26 @@
+enum MessageType {
+  text,
+  gift,
+  system,
+}
+
 class Message {
   final String id;
-  final String userId;
-  final String userName;
+  final String senderId;
+  final String senderName;
   final String content;
-  final String type; // 'text' | 'gift'
+  final String timestamp;
+  final MessageType type;
   final String? giftName;
   final String? giftIcon;
   final Map<String, int>? reactions;
 
   Message({
     required this.id,
-    required this.userId,
-    required this.userName,
+    required this.senderId,
+    required this.senderName,
     required this.content,
+    required this.timestamp,
     required this.type,
     this.giftName,
     this.giftIcon,
@@ -21,19 +29,21 @@ class Message {
 
   Message copyWith({
     String? id,
-    String? userId,
-    String? userName,
+    String? senderId,
+    String? senderName,
     String? content,
-    String? type,
+    String? timestamp,
+    MessageType? type,
     String? giftName,
     String? giftIcon,
     Map<String, int>? reactions,
   }) {
     return Message(
       id: id ?? this.id,
-      userId: userId ?? this.userId,
-      userName: userName ?? this.userName,
+      senderId: senderId ?? this.senderId,
+      senderName: senderName ?? this.senderName,
       content: content ?? this.content,
+      timestamp: timestamp ?? this.timestamp,
       type: type ?? this.type,
       giftName: giftName ?? this.giftName,
       giftIcon: giftIcon ?? this.giftIcon,
@@ -41,4 +51,3 @@ class Message {
     );
   }
 }
-

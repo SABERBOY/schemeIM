@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../../models/room.dart';
 import '../../models/user.dart';
@@ -28,13 +27,16 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
     if (text.trim().isEmpty) return;
     final user = Provider.of<UserProvider>(context, listen: false).currentUser;
     setState(() {
-      _messages.add(Message(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: user.id,
-        userName: user.name,
-        content: text,
-        type: 'text',
-      ));
+      _messages.add(
+        Message(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          senderId: user.id,
+          senderName: user.displayName,
+          content: text,
+          type: MessageType.text,
+          timestamp: DateTime.now().toIso8601String(),
+        ),
+      );
       _inputController.clear();
       _showQuickReplies = false;
     });
@@ -45,24 +47,31 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
     final provider = Provider.of<UserProvider>(context, listen: false);
     final user = provider.currentUser;
 
-    if (user.gold < gift.cost) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Not enough gold!")));
+    if (user.goldBalance < gift.cost) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Not enough gold!")));
       return;
     }
 
-    provider.updateUser(user.copyWith(gold: user.gold - gift.cost));
+    provider.updateUser(
+      user.copyWith(goldBalance: user.goldBalance - gift.cost),
+    );
 
     setState(() {
       _giftAnimation = gift;
-      _messages.add(Message(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: user.id,
-        userName: user.name,
-        content: "Sent a ${gift.name}",
-        type: 'gift',
-        giftName: gift.name,
-        giftIcon: gift.icon,
-      ));
+      _messages.add(
+        Message(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          senderId: user.id,
+          senderName: user.displayName,
+          content: "Sent a ${gift.name}",
+          type: MessageType.gift,
+          giftName: gift.name,
+          giftIcon: gift.icon,
+          timestamp: DateTime.now().toIso8601String(),
+        ),
+      );
       _showGifts = false;
     });
     _scrollToBottom();
@@ -87,6 +96,7 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserProvider>(context).currentUser;
+    final provider = Provider.of<UserProvider>(context, listen: false);
 
     return Scaffold(
       resizeToAvoidBottomInset: true, // Allow chat to move up
@@ -107,12 +117,12 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
                   _buildSeats(widget.room),
                   Expanded(child: _buildChat()),
                   if (_showQuickReplies) _buildQuickReplies(),
-                  _buildBottomBar(user),
+                  _buildBottomBar(user, provider),
                 ],
               ),
             ),
           ),
-          if (_showGifts) _buildGiftPanel(user),
+          if (_showGifts) _buildGiftPanel(user, provider),
           if (_giftAnimation != null) _buildGiftAnimation(),
         ],
       ),
@@ -130,13 +140,23 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           Text(
-            "${widget.room.country} ${widget.room.title}",
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            "${widget.room.countryFlag} ${widget.room.title}",
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
           Row(
             children: [
-              IconButton(icon: const Icon(Icons.people, color: Colors.white), onPressed: () {}),
-              IconButton(icon: const Icon(Icons.settings, color: Colors.white), onPressed: () {}),
+              IconButton(
+                icon: const Icon(Icons.people, color: Colors.white),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: const Icon(Icons.settings, color: Colors.white),
+                onPressed: () {},
+              ),
             ],
           ),
         ],
@@ -173,31 +193,46 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
           clipBehavior: Clip.none,
           children: [
             Container(
-              width: 60, height: 60,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: AppTheme.secondary, width: 2),
-                image: DecorationImage(image: NetworkImage(user.avatar), fit: BoxFit.cover),
+                image: DecorationImage(
+                  image: NetworkImage(user.avatarUrl),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-            if (user.frame != null && user.frame!.isNotEmpty)
+            if (user.frameUrl != null && user.frameUrl!.isNotEmpty)
               Positioned(
-                top: -10, left: -10, right: -10, bottom: -10,
-                child: SvgPicture.string(user.frame!, fit: BoxFit.fill),
+                top: -10,
+                left: -10,
+                right: -10,
+                bottom: -10,
+                child: Image.network(user.frameUrl!, fit: BoxFit.fill),
               ),
             if (isHost)
               Positioned(
-                bottom: -5, right: -5,
+                bottom: -5,
+                right: -5,
                 child: Container(
                   padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(color: AppTheme.secondary, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                    color: AppTheme.secondary,
+                    shape: BoxShape.circle,
+                  ),
                   child: const Text("👑", style: TextStyle(fontSize: 10)),
                 ),
               ),
           ],
         ),
         const SizedBox(height: 5),
-        Text(user.name, style: const TextStyle(color: Colors.white, fontSize: 12), overflow: TextOverflow.ellipsis),
+        Text(
+          user.displayName,
+          style: const TextStyle(color: Colors.white, fontSize: 12),
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }
@@ -206,16 +241,24 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
     return Column(
       children: [
         Container(
-          width: 55, height: 55,
+          width: 55,
+          height: 55,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.black.withOpacity(0.3),
             border: Border.all(color: Colors.white.withOpacity(0.3)),
           ),
-          child: Icon(Icons.mic_off, size: 16, color: Colors.white.withOpacity(0.5)),
+          child: Icon(
+            Icons.mic_off,
+            size: 16,
+            color: Colors.white.withOpacity(0.5),
+          ),
         ),
         const SizedBox(height: 5),
-        Text("$index", style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+        Text(
+          "$index",
+          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+        ),
       ],
     );
   }
@@ -227,24 +270,36 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
       itemCount: _messages.length,
       itemBuilder: (context, index) {
         final msg = _messages[index];
-        final isGift = msg.type == 'gift';
+        final isGift = msg.type == MessageType.gift;
         return Align(
           alignment: Alignment.centerLeft,
           child: Container(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: isGift ? const Color(0xFFFFD700).withOpacity(0.2) : Colors.black.withOpacity(0.5),
+              color: isGift
+                  ? const Color(0xFFFFD700).withOpacity(0.2)
+                  : Colors.black.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
               border: isGift ? Border.all(color: AppTheme.secondary) : null,
             ),
             child: RichText(
               text: TextSpan(
                 children: [
-                  TextSpan(text: "${msg.userName}: ", style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold, fontSize: 14)),
+                  TextSpan(
+                    text: "${msg.senderName}: ",
+                    style: const TextStyle(
+                      color: AppTheme.secondary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
                   TextSpan(
                     text: "${msg.content} ${msg.giftIcon ?? ''}",
-                    style: TextStyle(color: isGift ? AppTheme.secondary : Colors.white, fontSize: 14),
+                    style: TextStyle(
+                      color: isGift ? AppTheme.secondary : Colors.white,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -274,7 +329,10 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white.withOpacity(0.2)),
               ),
-              child: Text(QUICK_REPLIES[index], style: const TextStyle(color: Colors.white)),
+              child: Text(
+                QUICK_REPLIES[index],
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           );
         },
@@ -282,16 +340,21 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
     );
   }
 
-  Widget _buildBottomBar(User user) {
+  Widget _buildBottomBar(User user, UserProvider provider) {
     return Container(
       padding: const EdgeInsets.all(10),
       color: AppTheme.surface,
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: _micOn ? AppTheme.success : Colors.white.withOpacity(0.1),
+            backgroundColor: _micOn
+                ? AppTheme.success
+                : Colors.white.withOpacity(0.1),
             child: IconButton(
-              icon: Icon(_micOn ? Icons.mic : Icons.mic_off, color: Colors.white),
+              icon: Icon(
+                _micOn ? Icons.mic : Icons.mic_off,
+                color: Colors.white,
+              ),
               onPressed: () => setState(() => _micOn = !_micOn),
             ),
           ),
@@ -309,17 +372,23 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
                     child: TextField(
                       controller: _inputController,
                       style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
-                        hintText: "Say something...",
-                        hintStyle: TextStyle(color: Colors.grey),
+                      decoration: InputDecoration(
+                        hintText: provider.t('saySomething'),
+                        hintStyle: const TextStyle(color: Colors.grey),
                         border: InputBorder.none,
                       ),
                       onSubmitted: _sendMessage,
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.bolt, color: _showQuickReplies ? AppTheme.secondary : Colors.white),
-                    onPressed: () => setState(() => _showQuickReplies = !_showQuickReplies),
+                    icon: Icon(
+                      Icons.bolt,
+                      color: _showQuickReplies
+                          ? AppTheme.secondary
+                          : Colors.white,
+                    ),
+                    onPressed: () =>
+                        setState(() => _showQuickReplies = !_showQuickReplies),
                   ),
                 ],
               ),
@@ -346,9 +415,11 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
     );
   }
 
-  Widget _buildGiftPanel(User user) {
+  Widget _buildGiftPanel(User user, UserProvider provider) {
     return Positioned(
-      bottom: 0, left: 0, right: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: const BoxDecoration(
@@ -361,8 +432,17 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Send Gift", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                Text("💰 ${user.gold}", style: const TextStyle(color: AppTheme.secondary)),
+                Text(
+                  provider.t('sendGift'),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  "💰 ${user.goldBalance}",
+                  style: const TextStyle(color: AppTheme.secondary),
+                ),
               ],
             ),
             const SizedBox(height: 15),
@@ -386,8 +466,20 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(gift.icon, style: const TextStyle(fontSize: 30)),
-                          Text(gift.name, style: const TextStyle(color: Colors.white, fontSize: 10)),
-                          Text("${gift.cost}", style: const TextStyle(color: AppTheme.secondary, fontSize: 10)),
+                          Text(
+                            gift.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                            ),
+                          ),
+                          Text(
+                            "${gift.cost}",
+                            style: const TextStyle(
+                              color: AppTheme.secondary,
+                              fontSize: 10,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -399,9 +491,14 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.1)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.1),
+                ),
                 onPressed: () => setState(() => _showGifts = false),
-                child: const Text("Cancel", style: TextStyle(color: Colors.white)),
+                child: Text(
+                  provider.t('cancel'),
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -423,8 +520,23 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(_giftAnimation!.icon, style: const TextStyle(fontSize: 100, decoration: TextDecoration.none)),
-                  Text(_giftAnimation!.name, style: const TextStyle(color: AppTheme.secondary, fontSize: 30, fontWeight: FontWeight.bold, decoration: TextDecoration.none, shadows: [Shadow(blurRadius: 10, color: Colors.black)])),
+                  Text(
+                    _giftAnimation!.icon,
+                    style: const TextStyle(
+                      fontSize: 100,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  Text(
+                    _giftAnimation!.name,
+                    style: const TextStyle(
+                      color: AppTheme.secondary,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.none,
+                      shadows: [Shadow(blurRadius: 10, color: Colors.black)],
+                    ),
+                  ),
                 ],
               ),
             );
@@ -434,4 +546,3 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
     );
   }
 }
-

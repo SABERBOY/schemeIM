@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/room.dart';
+import '../../models/user.dart';
 import '../../constants.dart';
 import '../../providers/user_provider.dart';
+import '../../services/api_service.dart';
 import 'social_graph_screen.dart';
 import '../room/voice_room_screen.dart';
 
@@ -20,7 +22,14 @@ class _LobbyScreenState extends State<LobbyScreen> {
   @override
   void initState() {
     super.initState();
-    _rooms = List.from(MOCK_ROOMS);
+    _fetchRooms();
+  }
+
+  Future<void> _fetchRooms() async {
+    final rooms = await ApiService.room.list();
+    setState(() {
+      _rooms = rooms;
+    });
   }
 
   void _joinRoom(Room room) {
@@ -35,9 +44,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
     final newRoom = Room(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: title,
-      country: country,
+      countryFlag: country,
       host: user,
-      users: [],
+      seats: [],
+      onlineCount: 1,
       tags: ['New', 'Chat'],
     );
     setState(() {
@@ -47,6 +57,8 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<UserProvider>(context);
+
     if (_showMap) {
       return SocialGraphScreen(onClose: () => setState(() => _showMap = false));
     }
@@ -54,9 +66,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text(
-          "Active Rooms",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          provider.t('activeRooms'),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -68,11 +80,11 @@ class _LobbyScreenState extends State<LobbyScreen> {
           Container(
             margin: const EdgeInsets.only(right: 15),
             child: ElevatedButton.icon(
-              onPressed: () => _showCreateDialog(context),
+              onPressed: () => _showCreateDialog(context, provider),
               icon: const Icon(Icons.add, color: Colors.black, size: 16),
-              label: const Text(
-                "Create",
-                style: TextStyle(color: Colors.black),
+              label: Text(
+                provider.t('create'),
+                style: const TextStyle(color: Colors.black),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.secondary,
@@ -105,7 +117,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
     );
   }
 
-  void _showCreateDialog(BuildContext context) {
+  void _showCreateDialog(BuildContext context, UserProvider provider) {
     String title = '';
     String country = '🇦🇪';
     showDialog(
@@ -114,9 +126,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
         builder: (context, setState) {
           return AlertDialog(
             backgroundColor: AppTheme.surface,
-            title: const Text(
-              "Create Room",
-              style: TextStyle(color: Colors.white),
+            title: Text(
+              provider.t('createRoom'),
+              style: const TextStyle(color: Colors.white),
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -124,10 +136,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 TextField(
                   onChanged: (v) => title = v,
                   style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    hintText: "Room Title",
-                    hintStyle: TextStyle(color: Colors.grey),
-                    enabledBorder: UnderlineInputBorder(
+                  decoration: InputDecoration(
+                    hintText: provider.t('roomTitle'),
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    enabledBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey),
                     ),
                   ),
@@ -164,7 +176,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel"),
+                child: Text(provider.t('cancel')),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -176,9 +188,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.secondary,
                 ),
-                child: const Text(
-                  "Create",
-                  style: TextStyle(color: Colors.black),
+                child: Text(
+                  provider.t('create'),
+                  style: const TextStyle(color: Colors.black),
                 ),
               ),
             ],
@@ -228,9 +240,10 @@ class _RoomCard extends StatelessWidget {
                   ),
                   Positioned(
                     top: 8,
-                    left: 8,
+                    left: 8, // LTR/RTL handled by directionality if wrapped, but here hardcoded. 
+                             // Ideally use directional positioned or context direction check.
                     child: Text(
-                      room.country,
+                      room.countryFlag,
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
@@ -247,7 +260,7 @@ class _RoomCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        "👥 ${1 + room.users.length}",
+                        "👥 ${room.onlineCount}",
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -266,7 +279,7 @@ class _RoomCard extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 16,
-                      backgroundImage: NetworkImage(room.host.avatar),
+                      backgroundImage: NetworkImage(room.host.avatarUrl),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
