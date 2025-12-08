@@ -22,17 +22,48 @@ const App = () => {
   const [currentUser, setCurrentUser] = useState<User>({
     id: 'user_123',
     name: 'Habibi King',
+    displayName: 'Habibi King',
     avatar: 'https://cdn-icons-png.flaticon.com/512/147/147142.png',
+    avatarUrl: 'https://cdn-icons-png.flaticon.com/512/147/147142.png',
     frame: AVATAR_FRAMES[1].image, // Default Gold Luxury Frame
+    frameUrl: AVATAR_FRAMES[1].image,
     gold: 500,
-    privacy: { showSocialList: true },
+    goldBalance: 500,
+    level: 5,
+    privacy: { showSocialList: true, showOnlineStatus: true },
     isVerified: true
   });
 
   const [rooms, setRooms] = useState<Room[]>([
-    { id: '1', title: 'Dubai Chill 🌴', country: '🇦🇪', host: { id: 'h1', name: 'Ahmed', avatar: 'https://cdn-icons-png.flaticon.com/512/4825/4825038.png', frame: AVATAR_FRAMES[3].image, gold: 0 }, users: [], tags: ['Music', 'Chat'] },
-    { id: '2', title: 'Riyadh Nights 🌙', country: '🇸🇦', host: { id: 'h2', name: 'Sarah', avatar: 'https://cdn-icons-png.flaticon.com/512/4825/4825112.png', gold: 0 }, users: [], tags: ['Poetry'] },
-    { id: '3', title: 'Cairo Vibes 🇪🇬', country: '🇪🇬', host: { id: 'h3', name: 'Omar', avatar: 'https://cdn-icons-png.flaticon.com/512/4825/4825044.png', frame: AVATAR_FRAMES[2].image, gold: 0 }, users: [], tags: ['Funny'] },
+    { 
+      id: '1', title: 'Dubai Chill 🌴', country: '🇦🇪', countryFlag: '🇦🇪',
+      host: { 
+        id: 'h1', name: 'Ahmed', displayName: 'Ahmed', 
+        avatar: 'https://cdn-icons-png.flaticon.com/512/4825/4825038.png', avatarUrl: 'https://cdn-icons-png.flaticon.com/512/4825/4825038.png',
+        frame: AVATAR_FRAMES[3].image, frameUrl: AVATAR_FRAMES[3].image,
+        gold: 0, goldBalance: 0, level: 1, isVerified: false, privacy: { showSocialList: true, showOnlineStatus: true }
+      }, 
+      users: [], seats: [], onlineCount: 0, tags: ['Music', 'Chat'] 
+    },
+    { 
+      id: '2', title: 'Riyadh Nights 🌙', country: '🇸🇦', countryFlag: '🇸🇦',
+      host: { 
+        id: 'h2', name: 'Sarah', displayName: 'Sarah',
+        avatar: 'https://cdn-icons-png.flaticon.com/512/4825/4825112.png', avatarUrl: 'https://cdn-icons-png.flaticon.com/512/4825/4825112.png',
+        gold: 0, goldBalance: 0, level: 1, isVerified: false, privacy: { showSocialList: true, showOnlineStatus: true }
+      }, 
+      users: [], seats: [], onlineCount: 0, tags: ['Poetry'] 
+    },
+    { 
+      id: '3', title: 'Cairo Vibes 🇪🇬', country: '🇪🇬', countryFlag: '🇪🇬',
+      host: { 
+        id: 'h3', name: 'Omar', displayName: 'Omar',
+        avatar: 'https://cdn-icons-png.flaticon.com/512/4825/4825044.png', avatarUrl: 'https://cdn-icons-png.flaticon.com/512/4825/4825044.png',
+        frame: AVATAR_FRAMES[2].image, frameUrl: AVATAR_FRAMES[2].image,
+        gold: 0, goldBalance: 0, level: 1, isVerified: false, privacy: { showSocialList: true, showOnlineStatus: true }
+      }, 
+      users: [], seats: [], onlineCount: 0, tags: ['Funny'] 
+    },
   ]);
 
   // Translation Helper
