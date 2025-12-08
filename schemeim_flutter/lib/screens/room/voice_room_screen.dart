@@ -215,7 +215,7 @@ class _VoiceRoomScreenState extends State<VoiceRoomScreen> {
           child: Icon(Icons.mic_off, size: 16, color: Colors.white.withOpacity(0.5)),
         ),
         const SizedBox(height: 5),
-        Text("${index}", style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+        Text("$index", style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
       ],
     );
   }

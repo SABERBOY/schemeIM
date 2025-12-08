@@ -13,7 +13,7 @@ class AIChatScreen extends StatefulWidget {
 
 class _AIChatScreenState extends State<AIChatScreen> {
   // We keep history in Gemini format
-  List<Content> _history = [];
+  final List<Content> _history = [];
   // We keep UI messages for display (simpler structure)
   final List<Map<String, String>> _messages = [];
   final TextEditingController _controller = TextEditingController();

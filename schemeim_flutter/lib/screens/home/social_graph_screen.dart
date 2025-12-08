@@ -13,7 +13,7 @@ class SocialGraphScreen extends StatefulWidget {
 class _SocialGraphScreenState extends State<SocialGraphScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  List<Point3D> _points = [];
+  final List<Point3D> _points = [];
   double _rotationX = 0;
   double _rotationY = 0;
 

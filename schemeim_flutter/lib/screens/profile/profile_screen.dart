@@ -263,7 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     privacy: UserPrivacy(showSocialList: val),
                   ));
                 },
-                activeColor: AppTheme.success,
+                activeThumbColor: AppTheme.success,
               ),
             ],
           ),
