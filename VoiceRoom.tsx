@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Room, Message, SharedProps } from './types';
+import { MessageType } from './api_schema';
 import { THEME, GIFTS, QUICK_REPLIES, REACTIONS, getRank } from './constants';
 import { Icon } from './Icon';
 
@@ -41,9 +42,12 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceR
     const newMsg: Message = {
       id: Date.now().toString(),
       userId: user.id,
+      senderId: user.id,
       userName: user.name,
+      senderName: user.name,
       content: text,
-      type: 'text'
+      type: MessageType.TEXT,
+      timestamp: new Date().toISOString()
     };
     setMessages([...messages, newMsg]);
     setInputText('');
@@ -57,7 +61,7 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceR
     }
     
     // Update local user gold
-    onUpdateUser({ ...user, gold: user.gold - gift.cost });
+    onUpdateUser({ ...user, gold: user.gold - gift.cost, goldBalance: user.gold - gift.cost });
     
     // Play sound
     playGiftSound();
@@ -70,11 +74,14 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceR
     const newMsg: Message = {
       id: Date.now().toString(),
       userId: user.id,
+      senderId: user.id,
       userName: user.name,
+      senderName: user.name,
       content: `Sent a ${gift.name}`,
-      type: 'gift',
+      type: MessageType.GIFT,
       giftName: gift.name,
-      giftIcon: gift.icon
+      giftIcon: gift.icon,
+      timestamp: new Date().toISOString()
     };
     setMessages([...messages, newMsg]);
     setShowGifts(false);
@@ -346,8 +353,8 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceR
           {messages.map((msg) => (
             <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
               <div style={{
-                backgroundColor: msg.type === 'gift' ? 'rgba(255, 215, 0, 0.2)' : chatBg,
-                border: msg.type === 'gift' ? `1px solid ${THEME.secondary}` : 'none',
+                backgroundColor: msg.type === MessageType.GIFT ? 'rgba(255, 215, 0, 0.2)' : chatBg,
+                border: msg.type === MessageType.GIFT ? `1px solid ${THEME.secondary}` : 'none',
                 padding: '8px 12px', borderRadius: '12px',
                 maxWidth: '80%', position: 'relative'
               }}>
@@ -355,7 +362,7 @@ export const VoiceRoom = ({ room, user, onLeave, onUpdateUser, lang, t }: VoiceR
                 <span style={{ color: THEME.secondary, fontWeight: 'bold', fontSize: '0.8rem', marginRight: '5px', marginLeft: '5px' }}>
                   <bdi>{msg.userName}</bdi>:
                 </span>
-                <span style={{ color: msg.type === 'gift' ? THEME.secondary : chatText, fontSize: chatFontSize }}>
+                <span style={{ color: msg.type === MessageType.GIFT ? THEME.secondary : chatText, fontSize: chatFontSize }}>
                   <bdi>{msg.content}</bdi> {msg.giftIcon}
                 </span>
 

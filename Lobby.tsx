@@ -25,8 +25,11 @@ export const Lobby = ({ rooms, onJoinRoom, onAddRoom, currentUser, lang, t }: Lo
       id: Date.now().toString(),
       title: newTitle,
       country: newCountry,
+      countryFlag: newCountry,
       host: currentUser,
       users: [],
+      seats: [],
+      onlineCount: 1,
       tags: ['New', 'Chat']
     };
     onAddRoom(newRoom);
