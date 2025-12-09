@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/room.dart';
-import '../../models/user.dart';
 import '../../constants.dart';
 import '../../providers/user_provider.dart';
 import '../../services/api_service.dart';

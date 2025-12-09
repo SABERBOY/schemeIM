@@ -28,11 +28,20 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login(String phone, String code) async {
+  Future<void> authenticate(String phone, String code) async {
     final user = await ApiService.auth.login(phone, code);
     _currentUser = user;
+    // Authentication successful, but not yet logged in (waiting for IM)
+  }
+
+  void completeLogin() {
     _isLoggedIn = true;
     notifyListeners();
+  }
+
+  Future<void> login(String phone, String code) async {
+    await authenticate(phone, code);
+    completeLogin();
   }
 
   void logout() {

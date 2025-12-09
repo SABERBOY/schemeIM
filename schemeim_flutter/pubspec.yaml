@@ -42,6 +42,8 @@ dependencies:
   flutter_svg: ^2.2.3
   flutter_localizations:
     sdk: flutter
+  protobuf: ^6.0.0
+  rongcloud_im_kit: ^1.0.1
 
 dev_dependencies:
   flutter_test:

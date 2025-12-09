@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'models/chat_contact.dart';
-import 'models/room.dart';
 import 'models/user.dart';
 
 class AppTheme {
@@ -262,7 +261,7 @@ const List<GameItem> GAMES = [
   ),
 ];
 
-const Map<String, Map<String, String>> TRANSLATIONS = {
+/* const Map<String, Map<String, String>> TRANSLATIONS = {
   'en': {
     'home': 'Home',
     'games': 'Games',
@@ -379,7 +378,7 @@ const Map<String, Map<String, String>> TRANSLATIONS = {
     'invalidCode': 'رمز غير صحيح',
     'phonePlaceholder': '50 123 4567'
   }
-};
+}; */
 UserRank getRank(int gold) {
   if (gold > 10000) return UserRank(rankName: 'Emperor', colorHex: '#FFD700');
   if (gold > 5000) return UserRank(rankName: 'King', colorHex: '#C0C0C0');

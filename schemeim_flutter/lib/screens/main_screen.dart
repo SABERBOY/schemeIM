@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../constants.dart';
 import '../providers/user_provider.dart';
-import 'home/lobby_screen.dart';
 import 'games/game_center_screen.dart';
-import 'studio/image_studio_screen.dart';
+import 'home/lobby_screen.dart';
 import 'im/messages_screen.dart';
 import 'profile/profile_screen.dart';
+import 'studio/image_studio_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -30,7 +31,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<UserProvider>(context);
-    
     return Scaffold(
       backgroundColor: AppTheme.bg,
       body: _screens[_currentIndex],
@@ -49,11 +49,26 @@ class _MainScreenState extends State<MainScreen> {
           selectedFontSize: 10,
           unselectedFontSize: 10,
           items: [
-            BottomNavigationBarItem(icon: const Icon(Icons.home), label: provider.t('home')),
-            BottomNavigationBarItem(icon: const Icon(Icons.games), label: provider.t('games')),
-            BottomNavigationBarItem(icon: const Icon(Icons.auto_fix_high), label: provider.t('studio')),
-            BottomNavigationBarItem(icon: const Icon(Icons.chat_bubble), label: provider.t('im')),
-            BottomNavigationBarItem(icon: const Icon(Icons.person), label: provider.t('me')),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home),
+              label: provider.t('home'),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.games),
+              label: provider.t('games'),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.auto_fix_high),
+              label: provider.t('studio'),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.chat_bubble),
+              label: provider.t('im'),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.person),
+              label: provider.t('me'),
+            ),
           ],
         ),
       ),

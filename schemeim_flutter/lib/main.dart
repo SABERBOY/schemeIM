@@ -5,9 +5,19 @@ import 'providers/user_provider.dart';
 import 'screens/main_screen.dart';
 import 'screens/login_screen.dart';
 import 'constants.dart';
+import 'package:rongcloud_im_kit/app_providers.dart'; // 引入Provider配置
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    /*const MyApp()*/
+    RongCloudAppProviders.of(
+      MyApp(), // 你的根组件
+      additionalProviders: [
+        // 可以添加额外的Provider
+        // ...
+      ],
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -16,19 +26,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => UserProvider())],
       child: Consumer<UserProvider>(
         builder: (context, provider, child) {
           return MaterialApp(
             title: 'SchemeIM',
             debugShowCheckedModeBanner: false,
             locale: Locale(provider.language),
-            supportedLocales: const [
-              Locale('en', ''),
-              Locale('ar', ''),
-            ],
+            supportedLocales: const [Locale('en', ''), Locale('ar', '')],
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
@@ -39,13 +44,15 @@ class MyApp extends StatelessWidget {
               scaffoldBackgroundColor: AppTheme.bg,
               useMaterial3: true,
               colorScheme: ColorScheme.fromSeed(
-                seedColor: AppTheme.primary, 
+                seedColor: AppTheme.primary,
                 background: AppTheme.bg,
                 brightness: Brightness.dark,
               ),
               fontFamily: provider.language == 'ar' ? 'Cairo' : 'Roboto',
             ),
-            home: provider.isLoggedIn ? const MainScreen() : const LoginScreen(),
+            home: provider.isLoggedIn
+                ? const MainScreen()
+                : const LoginScreen(),
           );
         },
       ),

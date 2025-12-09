@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rongcloud_im_kit/providers/engine_provider.dart';
+import 'package:rongcloud_im_kit/rongcloud_im_kit.dart';
 import '../../constants.dart';
-import '../../models/user.dart';
 import '../../providers/user_provider.dart';
 import '../../services/api_service.dart';
 
@@ -45,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleSendOtp() async {
     if (_phoneController.text.length < 5) return;
     setState(() => _loading = true);
-    
+
     await ApiService.auth.sendOtp(_phoneController.text);
 
     if (mounted) {
@@ -71,26 +72,62 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_otpController.text.length != 4) return;
     setState(() => _loading = true);
 
-    await Provider.of<UserProvider>(context, listen: false)
-        .login(_phoneController.text, _otpController.text);
-
-    if (mounted) {
-      setState(() => _loading = false);
+    try {
+      final provider = Provider.of<UserProvider>(context, listen: false);
+      await provider.authenticate(_phoneController.text, _otpController.text);
+      await _initIM(context);
+    } catch (e) {
+      print("Login failed: $e");
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
-    // Simulate API call
-    // Future.delayed(const Duration(seconds: 1, milliseconds: 500), () {
-    //   if (mounted) {
-    //     setState(() => _loading = false);
-    //     final user = User(
-    //       id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-    //       name: 'User ${_phoneController.text.length >= 4 ? _phoneController.text.substring(_phoneController.text.length - 4) : _phoneController.text}',
-    //       avatar: 'https://cdn-icons-png.flaticon.com/512/147/147142.png',
-    //       gold: 100,
-    //       privacy: UserPrivacy(showSocialList: true),
-    //     );
-    //     Provider.of<UserProvider>(context, listen: false).login(user);
-    //   }
-    // });
+  }
+
+  Future<void> _initIM(BuildContext context) async {
+    // 在需要初始化的页面中获取Provider
+    final engineProvider = Provider.of<RCKEngineProvider>(
+      context,
+      listen: false,
+    );
+    // 添加网络状态变化监听
+    engineProvider.networkChangeNotifier.addListener(() {
+      final status = engineProvider.networkChangeNotifier.value;
+      if (status != null) {
+        // 处理连接状态变化
+        print("连接状态变化: $status");
+      }
+    });
+    // 初始化并连接到融云服务器
+    final options = RCIMIWEngineOptions.create();
+    final engine = await engineProvider.engineCreate("25wehl3u2f7mw", options);
+
+    await engineProvider.engineConnect(
+      "Egm3GqRPlKChKr9rmAzUn92Vex2o7ROV@i6h3.cn.rongnav.com;i6h3.cn.rongcfg.com",
+      100,
+      onResult: (code) {
+        if (code == 0) {
+          //连接成功
+          // 连接成功
+          print("连接成功，用户ID: ${engineProvider.currentUserId}");
+          // 可以在这里注册自定义消息类型
+          engine?.registerNativeCustomMessage(
+            'CustomMessageType',
+            RCIMIWNativeCustomMessagePersistentFlag.persisted,
+          );
+          // 连接成功后完成登录跳转
+          if (mounted) {
+            Provider.of<UserProvider>(context, listen: false).completeLogin();
+          }
+        } else {
+          //错误提示
+          print("IM connect failed: $code");
+          if (mounted) {
+            setState(() => _loading = false);
+          }
+        }
+      },
+    );
   }
 
   void _handleResend() {
@@ -107,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<UserProvider>(context);
-    
+
     return Scaffold(
       backgroundColor: AppTheme.bg,
       body: SafeArea(
@@ -124,7 +161,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: TextButton(
-                  onPressed: () => provider.setLanguage(provider.language == 'en' ? 'ar' : 'en'),
+                  onPressed: () => provider.setLanguage(
+                    provider.language == 'en' ? 'ar' : 'en',
+                  ),
                   child: Text(
                     provider.language == 'en' ? 'العربية' : 'English',
                     style: const TextStyle(color: Colors.white),
@@ -132,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            
+
             Padding(
               padding: const EdgeInsets.all(20),
               child: Center(
@@ -155,24 +194,38 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: const Color(0xFFE91E63).withOpacity(0.4),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
-                            )
+                            ),
                           ],
                         ),
-                        child: const Icon(Icons.smartphone, size: 50, color: Colors.white),
+                        child: const Icon(
+                          Icons.smartphone,
+                          size: 50,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 30),
                       Text(
                         provider.t('welcomeBack'),
-                        style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Text(
                         provider.t('login'),
-                        style: const TextStyle(color: Colors.grey, fontSize: 16),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
                       ),
                       const SizedBox(height: 40),
-                      
-                      if (_step == 1) _buildPhoneStep(provider) else _buildOtpStep(provider),
+
+                      if (_step == 1)
+                        _buildPhoneStep(provider)
+                      else
+                        _buildOtpStep(provider),
                     ],
                   ),
                 ),
@@ -190,7 +243,10 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(provider.t('enterPhone'), style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 14)),
+          Text(
+            provider.t('enterPhone'),
+            style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
+          ),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -225,7 +281,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: TextField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
-                    style: const TextStyle(color: Colors.white, fontSize: 16, letterSpacing: 1),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      letterSpacing: 1,
+                    ),
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: provider.t('phonePlaceholder'),
@@ -241,24 +301,32 @@ class _LoginScreenState extends State<LoginScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: (_loading || _phoneController.text.length < 5) ? null : _handleSendOtp,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                padding: const EdgeInsets.all(15),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ).copyWith(
-                // backgroundColor: MaterialStateProperty.resolveWith((states) {
-                //   if (states.contains(MaterialState.disabled)) return Colors.grey.withOpacity(0.3);
-                backgroundColor: WidgetStateProperty.resolveWith((states) {
-                  if (states.contains(WidgetState.disabled)) return Colors.grey.withOpacity(0.3);
-                  return null; // Defer to background decoration
-                }),
-              ),
+              onPressed: (_loading || _phoneController.text.length < 5)
+                  ? null
+                  : _handleSendOtp,
+              style:
+                  ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    padding: const EdgeInsets.all(15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ).copyWith(
+                    // backgroundColor: MaterialStateProperty.resolveWith((states) {
+                    //   if (states.contains(MaterialState.disabled)) return Colors.grey.withOpacity(0.3);
+                    backgroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.disabled))
+                        return Colors.grey.withOpacity(0.3);
+                      return null; // Defer to background decoration
+                    }),
+                  ),
               child: Ink(
                 decoration: BoxDecoration(
-                  gradient: (_loading || _phoneController.text.length < 5) 
-                    ? null 
-                    : const LinearGradient(colors: [Color(0xFF311B92), Color(0xFF673AB7)]),
+                  gradient: (_loading || _phoneController.text.length < 5)
+                      ? null
+                      : const LinearGradient(
+                          colors: [Color(0xFF311B92), Color(0xFF673AB7)],
+                        ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Container(
@@ -266,7 +334,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   constraints: const BoxConstraints(minHeight: 50),
                   child: Text(
                     _loading ? provider.t('loading') : provider.t('sendCode'),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
@@ -299,7 +371,11 @@ class _LoginScreenState extends State<LoginScreen> {
               keyboardType: TextInputType.number,
               maxLength: 4,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 24, letterSpacing: 10),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                letterSpacing: 10,
+              ),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: "0000",
@@ -312,35 +388,53 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 20),
           Center(
             child: _timer > 0
-                ? Text("${provider.t('resendIn')} ${_timer}s", style: const TextStyle(color: Colors.grey))
+                ? Text(
+                    "${provider.t('resendIn')} ${_timer}s",
+                    style: const TextStyle(color: Colors.grey),
+                  )
                 : TextButton(
                     onPressed: _handleResend,
-                    child: Text(provider.t('resend'), style: const TextStyle(color: AppTheme.secondary)),
+                    child: Text(
+                      provider.t('resend'),
+                      style: const TextStyle(color: AppTheme.secondary),
+                    ),
                   ),
           ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: (_loading || _otpController.text.length != 4) ? null : _handleVerify,
+              onPressed: (_loading || _otpController.text.length != 4)
+                  ? null
+                  : _handleVerify,
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Ink(
                 decoration: BoxDecoration(
-                  gradient: (_loading || _otpController.text.length != 4) 
-                    ? null 
-                    : const LinearGradient(colors: [Color(0xFF311B92), Color(0xFF673AB7)]),
+                  gradient: (_loading || _otpController.text.length != 4)
+                      ? null
+                      : const LinearGradient(
+                          colors: [Color(0xFF311B92), Color(0xFF673AB7)],
+                        ),
                   borderRadius: BorderRadius.circular(12),
-                  color: (_loading || _otpController.text.length != 4) ? Colors.grey.withOpacity(0.3) : null
+                  color: (_loading || _otpController.text.length != 4)
+                      ? Colors.grey.withOpacity(0.3)
+                      : null,
                 ),
                 child: Container(
                   alignment: Alignment.center,
                   constraints: const BoxConstraints(minHeight: 50),
                   child: Text(
                     _loading ? provider.t('loading') : provider.t('verify'),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
@@ -355,7 +449,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   _otpController.clear();
                 });
               },
-              child: Text(provider.t('back'), style: const TextStyle(color: Colors.grey)),
+              child: Text(
+                provider.t('back'),
+                style: const TextStyle(color: Colors.grey),
+              ),
             ),
           ),
         ],
