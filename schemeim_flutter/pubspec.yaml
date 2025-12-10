@@ -44,6 +44,12 @@ dependencies:
     sdk: flutter
   protobuf: ^6.0.0
   rongcloud_im_kit: ^1.0.1
+  flutter_mana: ^1.4.0
+  flutter_mana_kits: ^1.4.0
+  riverpod: ^3.0.3
+  mobx: ^2.5.0
+  flutter_riverpod: ^3.0.3
+  dio: ^5.9.0
 
 dev_dependencies:
   flutter_test:

@@ -14,6 +14,8 @@ class AppTheme {
   static const Color danger = Color(0xFFD32F2F);
 }
 
+const String API_BASE_URL = 'https://api.yourdomain.com/v1';
+
 class AvatarFrame {
   final String id;
   final String image;
@@ -215,10 +217,30 @@ const List<Gift> GIFTS = [
 
 const List<AvatarFrame> AVATAR_FRAMES = [
   AvatarFrame(id: 'none', name: 'Default', image: ''),
-  AvatarFrame(id: 'gold_luxury', name: 'Gold Luxury', image: '''<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#FFD700'/><stop offset='50%' stop-color='#FFA500'/><stop offset='100%' stop-color='#FFD700'/></linearGradient></defs><circle cx='50' cy='50' r='46' fill='none' stroke='url(#g)' stroke-width='6'/><circle cx='50' cy='50' r='46' fill='none' stroke='white' stroke-width='1' stroke-dasharray='2 5'/></svg>'''),
-  AvatarFrame(id: 'neon_blue', name: 'Neon Blue', image: '''<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='47' fill='none' stroke='#00FFFF' stroke-width='4' filter='drop-shadow(0 0 5px #00FFFF)'/></svg>'''),
-  AvatarFrame(id: 'royal_purple', name: 'Royal', image: '''<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='none' stroke='#9C27B0' stroke-width='6'/><circle cx='50' cy='0' r='5' fill='#FFD700'/><circle cx='50' cy='100' r='5' fill='#FFD700'/></svg>'''),
-  AvatarFrame(id: 'rose_garden', name: 'Rose Garden', image: '''<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='none' stroke='#E91E63' stroke-width='4'/><circle cx='15' cy='50' r='8' fill='#E91E63'/><circle cx='85' cy='50' r='8' fill='#E91E63'/></svg>'''),
+  AvatarFrame(
+    id: 'gold_luxury',
+    name: 'Gold Luxury',
+    image:
+        '''<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#FFD700'/><stop offset='50%' stop-color='#FFA500'/><stop offset='100%' stop-color='#FFD700'/></linearGradient></defs><circle cx='50' cy='50' r='46' fill='none' stroke='url(#g)' stroke-width='6'/><circle cx='50' cy='50' r='46' fill='none' stroke='white' stroke-width='1' stroke-dasharray='2 5'/></svg>''',
+  ),
+  AvatarFrame(
+    id: 'neon_blue',
+    name: 'Neon Blue',
+    image:
+        '''<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='47' fill='none' stroke='#00FFFF' stroke-width='4' filter='drop-shadow(0 0 5px #00FFFF)'/></svg>''',
+  ),
+  AvatarFrame(
+    id: 'royal_purple',
+    name: 'Royal',
+    image:
+        '''<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='none' stroke='#9C27B0' stroke-width='6'/><circle cx='50' cy='0' r='5' fill='#FFD700'/><circle cx='50' cy='100' r='5' fill='#FFD700'/></svg>''',
+  ),
+  AvatarFrame(
+    id: 'rose_garden',
+    name: 'Rose Garden',
+    image:
+        '''<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='none' stroke='#E91E63' stroke-width='4'/><circle cx='15' cy='50' r='8' fill='#E91E63'/><circle cx='85' cy='50' r='8' fill='#E91E63'/></svg>''',
+  ),
 ];
 const List<String> QUICK_REPLIES = [
   'Hello! 👋',

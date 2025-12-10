@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide Consumer;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'providers/user_provider.dart';
 import 'screens/main_screen.dart';
@@ -9,13 +10,14 @@ import 'package:rongcloud_im_kit/app_providers.dart'; // 引入Provider配置
 
 void main() {
   runApp(
-    /*const MyApp()*/
-    RongCloudAppProviders.of(
-      MyApp(), // 你的根组件
-      additionalProviders: [
-        // 可以添加额外的Provider
-        // ...
-      ],
+    ProviderScope(
+      child: RongCloudAppProviders.of(
+        MyApp(), // 你的根组件
+        additionalProviders: [
+          // 可以添加额外的Provider
+          // ...
+        ],
+      ),
     ),
   );
 }

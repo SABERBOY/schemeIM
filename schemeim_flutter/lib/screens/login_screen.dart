@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rongcloud_im_kit/providers/engine_provider.dart';
 import 'package:rongcloud_im_kit/rongcloud_im_kit.dart';
 import '../../constants.dart';
 import '../../providers/user_provider.dart';
@@ -315,8 +314,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     // backgroundColor: MaterialStateProperty.resolveWith((states) {
                     //   if (states.contains(MaterialState.disabled)) return Colors.grey.withOpacity(0.3);
                     backgroundColor: WidgetStateProperty.resolveWith((states) {
-                      if (states.contains(WidgetState.disabled))
+                      if (states.contains(WidgetState.disabled)) {
                         return Colors.grey.withOpacity(0.3);
+                      }
                       return null; // Defer to background decoration
                     }),
                   ),

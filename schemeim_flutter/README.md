@@ -14,3 +14,9 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+Run the app with the API key
+
+```bash
+flutter run --dart-define=API_KEY=AIzaSyCbVFApghqdrsEEkxejBvTiO7j15_OPqZo
+```
