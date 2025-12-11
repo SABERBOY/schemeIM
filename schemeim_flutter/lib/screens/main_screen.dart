@@ -5,6 +5,7 @@ import '../constants.dart';
 import '../providers/user_provider.dart';
 import 'games/game_center_screen.dart';
 import 'home/lobby_screen.dart';
+import 'im/ConversationListScreen.dart';
 import 'im/messages_screen.dart';
 import 'profile/profile_screen.dart';
 import 'studio/image_studio_screen.dart';
@@ -26,6 +27,7 @@ class _MainScreenState extends State<MainScreen> {
     const ImageStudioScreen(),
     const MessagesScreen(),
     const ProfileScreen(),
+    const ConversationListScreen(),
   ];
 
   @override
@@ -68,6 +70,10 @@ class _MainScreenState extends State<MainScreen> {
             BottomNavigationBarItem(
               icon: const Icon(Icons.person),
               label: provider.t('me'),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.mark_unread_chat_alt_outlined),
+              label: provider.t('chat'),
             ),
           ],
         ),

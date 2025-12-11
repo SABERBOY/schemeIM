@@ -43,7 +43,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   protobuf: ^6.0.0
-  rongcloud_im_kit: ^1.0.1
+  rongcloud_im_kit: ^1.0.2
   flutter_mana: ^1.4.0
   flutter_mana_kits: ^1.4.0
   riverpod: ^3.0.3
