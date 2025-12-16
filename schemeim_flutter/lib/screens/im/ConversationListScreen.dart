@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rongcloud_im_kit/rongcloud_im_kit.dart';
+import 'package:rongcloud_im_kit/ui_config/chat/page/chat_app_bar_config.dart';
+import 'package:rongcloud_im_kit/ui_config/chat/page/chat_background_config.dart';
 
 class ConversationListScreen extends StatelessWidget {
   const ConversationListScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('会话列表'),
-      ),
+      appBar: AppBar(title: Text('会话列表')),
       body: RCKConvoPage(
         onItemTap: (context, conversation, index) {
           // 跳转到聊天页面
@@ -17,6 +17,17 @@ class ConversationListScreen extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => RCKChatPage(
+                config: RCKChatPageConfig(
+                  appBarConfig: const RCKChatAppBarConfig(
+                    titleConfig: RCKChatTitleConfig(text: '聊天'),
+                  ),
+                  backgroundConfig: RCKChatBackgroundConfig(
+                    backgroundImageUrl: 'https://example.com/bg.jpg',
+                  ),
+                  bubbleConfig: RCKBubbleConfig(),
+                  inputConfig: RCKMessageInputConfig(),
+                  useDefaultAppBarLeading: true,
+                ),
                 conversation: conversation,
               ),
             ),
@@ -41,7 +52,11 @@ class ConversationListScreen extends StatelessWidget {
                     },
                   ),
                   ListTile(
-                    leading: Icon(conversation.top ?? false ? Icons.push_pin_outlined : Icons.push_pin),
+                    leading: Icon(
+                      conversation.top ?? false
+                          ? Icons.push_pin_outlined
+                          : Icons.push_pin,
+                    ),
                     title: Text(conversation.top ?? false ? '取消置顶' : '置顶会话'),
                     onTap: () {
                       Navigator.pop(context);

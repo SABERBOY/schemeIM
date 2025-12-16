@@ -1,19 +1,20 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as legacy_provider;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rongcloud_im_kit/rongcloud_im_kit.dart';
 import '../../constants.dart';
 import '../../providers/user_provider.dart';
 import '../../services/api_service.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   int _step = 1; // 1: Phone, 2: OTP
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
@@ -46,25 +47,26 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_phoneController.text.length < 5) return;
     setState(() => _loading = true);
 
-    await ApiService.auth.sendOtp(_phoneController.text);
+    try {
+      final authApi = ref.read(authApiProvider);
+      await authApi.sendOtp(_phoneController.text);
 
-    if (mounted) {
-      setState(() {
-        _loading = false;
-        _step = 2;
-      });
-      _startTimer();
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _step = 2;
+        });
+        _startTimer();
+      }
+    } catch (e) {
+       print("Send OTP failed: $e");
+       if (mounted) {
+         setState(() => _loading = false);
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('Failed to send OTP: $e')),
+         );
+       }
     }
-    // Simulate API call
-    // Future.delayed(const Duration(seconds: 1, milliseconds: 500), () {
-    //   if (mounted) {
-    //     setState(() {
-    //       _loading = false;
-    //       _step = 2;
-    //     });
-    //     _startTimer();
-    //   }
-    // });
   }
 
   Future<void> _handleVerify() async {
@@ -72,77 +74,91 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
 
     try {
-      final provider = Provider.of<UserProvider>(context, listen: false);
-      await provider.authenticate(_phoneController.text, _otpController.text);
-      await _initIM(context);
+      final authApi = ref.read(authApiProvider);
+      final user = await authApi.login(_phoneController.text, _otpController.text);
+      
+      // 1. Update Riverpod Token
+      ref.read(tokenProvider.notifier).setToken("mock_jwt_token_123");
+
+      // 2. Update Legacy UserProvider
+      if (mounted) {
+        final legacyUserProvider = legacy_provider.Provider.of<UserProvider>(context, listen: false);
+        legacyUserProvider.updateUser(user);
+      }
+      
+      // 3. Init IM
+      await _initIM(context, user.id);
+      
     } catch (e) {
       print("Login failed: $e");
       if (mounted) {
         setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('Login failed: $e')),
+         );
       }
     }
   }
 
-  Future<void> _initIM(BuildContext context) async {
-    // 在需要初始化的页面中获取Provider
-    final engineProvider = Provider.of<RCKEngineProvider>(
+  Future<void> _initIM(BuildContext context, String userId) async {
+    // Access Legacy RCKEngineProvider
+    final engineProvider = legacy_provider.Provider.of<RCKEngineProvider>(
       context,
       listen: false,
     );
-    // 添加网络状态变化监听
+    
+    // Listen for network changes
     engineProvider.networkChangeNotifier.addListener(() {
       final status = engineProvider.networkChangeNotifier.value;
       if (status != null) {
-        // 处理连接状态变化
-        print("连接状态变化: $status");
+        print("Network status change: $status");
       }
     });
-    // 初始化并连接到融云服务器
-    final options = RCIMIWEngineOptions.create();
-    final engine = await engineProvider.engineCreate("25wehl3u2f7mw", options);
 
-    await engineProvider.engineConnect(
-      "Egm3GqRPlKChKr9rmAzUn92Vex2o7ROV@i6h3.cn.rongnav.com;i6h3.cn.rongcfg.com",
-      100,
-      onResult: (code) {
-        if (code == 0) {
-          //连接成功
-          // 连接成功
-          print("连接成功，用户ID: ${engineProvider.currentUserId}");
-          // 可以在这里注册自定义消息类型
-          engine?.registerNativeCustomMessage(
-            'CustomMessageType',
-            RCIMIWNativeCustomMessagePersistentFlag.persisted,
-          );
-          // 连接成功后完成登录跳转
-          if (mounted) {
-            Provider.of<UserProvider>(context, listen: false).completeLogin();
+    try {
+      final options = RCIMIWEngineOptions.create();
+      final engine = await engineProvider.engineCreate("25wehl3u2f7mw", options);
+
+      await engineProvider.engineConnect(
+        "Egm3GqRPlKChKr9rmAzUn92Vex2o7ROV@i6h3.cn.rongnav.com;i6h3.cn.rongcfg.com",
+        100,
+        onResult: (code) {
+          if (code == 0) {
+            print("IM Connected, UserID: ${engineProvider.currentUserId}");
+            engine?.registerNativeCustomMessage(
+              'CustomMessageType',
+              RCIMIWNativeCustomMessagePersistentFlag.persisted,
+            );
+            
+            if (mounted) {
+              legacy_provider.Provider.of<UserProvider>(context, listen: false).completeLogin();
+            }
+          } else {
+            print("IM connect failed: $code");
+            if (mounted) {
+              setState(() => _loading = false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                 SnackBar(content: Text('IM Connection Failed: $code')),
+              );
+            }
           }
-        } else {
-          //错误提示
-          print("IM connect failed: $code");
-          if (mounted) {
-            setState(() => _loading = false);
-          }
-        }
-      },
-    );
+        },
+      );
+    } catch (e) {
+      print("IM Init Error: $e");
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   void _handleResend() {
     if (_timer > 0) return;
-    setState(() => _loading = true);
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() => _loading = false);
-        _startTimer();
-      }
-    });
+    _handleSendOtp();
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<UserProvider>(context);
+    // Access legacy provider for UI text/theme
+    final userProvider = legacy_provider.Provider.of<UserProvider>(context);
 
     return Scaffold(
       backgroundColor: AppTheme.bg,
@@ -152,19 +168,19 @@ class _LoginScreenState extends State<LoginScreen> {
             // Language Toggle
             Positioned(
               top: 20,
-              right: provider.language == 'en' ? 20 : null,
-              left: provider.language == 'ar' ? 20 : null,
+              right: userProvider.language == 'en' ? 20 : null,
+              left: userProvider.language == 'ar' ? 20 : null,
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: TextButton(
-                  onPressed: () => provider.setLanguage(
-                    provider.language == 'en' ? 'ar' : 'en',
+                  onPressed: () => userProvider.setLanguage(
+                    userProvider.language == 'en' ? 'ar' : 'en',
                   ),
                   child: Text(
-                    provider.language == 'en' ? 'العربية' : 'English',
+                    userProvider.language == 'en' ? 'العربية' : 'English',
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -204,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 30),
                       Text(
-                        provider.t('welcomeBack'),
+                        userProvider.t('welcomeBack'),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -213,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        provider.t('login'),
+                        userProvider.t('login'),
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 16,
@@ -222,9 +238,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 40),
 
                       if (_step == 1)
-                        _buildPhoneStep(provider)
+                        _buildPhoneStep(userProvider)
                       else
-                        _buildOtpStep(provider),
+                        _buildOtpStep(userProvider),
                     ],
                   ),
                 ),
@@ -244,104 +260,79 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           Text(
             provider.t('enterPhone'),
-            style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 10),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: AppTheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: DropdownButton<String>(
-                  value: _countryCode,
-                  dropdownColor: AppTheme.surface,
-                  underline: const SizedBox(),
-                  style: const TextStyle(color: Colors.white),
-                  items: const [
-                    DropdownMenuItem(value: "+971", child: Text("🇦🇪 +971")),
-                    DropdownMenuItem(value: "+966", child: Text("🇸🇦 +966")),
-                    DropdownMenuItem(value: "+20", child: Text("🇪🇬 +20")),
-                    DropdownMenuItem(value: "+1", child: Text("🇺🇸 +1")),
-                  ],
-                  onChanged: (v) => setState(() => _countryCode = v!),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(12),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: Row(
+              children: [
+                DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _countryCode,
+                    dropdownColor: const Color(0xFF2C2C2C),
+                    style: const TextStyle(color: Colors.white),
+                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                    items: ['+971', '+966', '+20', '+1']
+                        .map((code) => DropdownMenuItem(
+                              value: code,
+                              child: Text(code),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _countryCode = val);
+                    },
                   ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 1,
+                  height: 24,
+                  color: Colors.white24,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
                   child: TextField(
                     controller: _phoneController,
+                    style: const TextStyle(color: Colors.white),
                     keyboardType: TextInputType.phone,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      letterSpacing: 1,
-                    ),
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: provider.t('phonePlaceholder'),
-                      hintStyle: const TextStyle(color: Colors.grey),
+                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
                     ),
-                    onChanged: (v) => setState(() {}),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
+            height: 50,
             child: ElevatedButton(
-              onPressed: (_loading || _phoneController.text.length < 5)
-                  ? null
-                  : _handleSendOtp,
-              style:
-                  ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    padding: const EdgeInsets.all(15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ).copyWith(
-                    // backgroundColor: MaterialStateProperty.resolveWith((states) {
-                    //   if (states.contains(MaterialState.disabled)) return Colors.grey.withOpacity(0.3);
-                    backgroundColor: WidgetStateProperty.resolveWith((states) {
-                      if (states.contains(WidgetState.disabled)) {
-                        return Colors.grey.withOpacity(0.3);
-                      }
-                      return null; // Defer to background decoration
-                    }),
-                  ),
-              child: Ink(
-                decoration: BoxDecoration(
-                  gradient: (_loading || _phoneController.text.length < 5)
-                      ? null
-                      : const LinearGradient(
-                          colors: [Color(0xFF311B92), Color(0xFF673AB7)],
-                        ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Container(
-                  alignment: Alignment.center,
-                  constraints: const BoxConstraints(minHeight: 50),
-                  child: Text(
-                    _loading ? provider.t('loading') : provider.t('sendCode'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+              onPressed: _loading ? null : _handleSendOtp,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
+              child: _loading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(provider.t('sendCode')),
             ),
           ),
         ],
@@ -356,41 +347,63 @@ class _LoginScreenState extends State<LoginScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "${provider.t('enterCode')} ($_countryCode ${_phoneController.text})",
-            style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
+            provider.t('enterCode'),
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: TextField(
               controller: _otpController,
-              keyboardType: TextInputType.number,
-              maxLength: 4,
-              textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 24,
                 letterSpacing: 10,
               ),
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
               decoration: const InputDecoration(
                 border: InputBorder.none,
-                hintText: "0000",
-                hintStyle: TextStyle(color: Colors.grey, letterSpacing: 10),
-                counterText: "",
+                counterText: '',
+                contentPadding: EdgeInsets.symmetric(vertical: 15),
               ),
-              onChanged: (v) => setState(() {}),
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _loading ? null : _handleVerify,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: _loading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(provider.t('verify')),
             ),
           ),
           const SizedBox(height: 20),
           Center(
             child: _timer > 0
                 ? Text(
-                    "${provider.t('resendIn')} ${_timer}s",
-                    style: const TextStyle(color: Colors.grey),
+                    '${provider.t('resendIn')} $_timer s',
+                    style: TextStyle(color: Colors.white.withOpacity(0.5)),
                   )
                 : TextButton(
                     onPressed: _handleResend,
@@ -399,61 +412,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(color: AppTheme.secondary),
                     ),
                   ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: (_loading || _otpController.text.length != 4)
-                  ? null
-                  : _handleVerify,
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Ink(
-                decoration: BoxDecoration(
-                  gradient: (_loading || _otpController.text.length != 4)
-                      ? null
-                      : const LinearGradient(
-                          colors: [Color(0xFF311B92), Color(0xFF673AB7)],
-                        ),
-                  borderRadius: BorderRadius.circular(12),
-                  color: (_loading || _otpController.text.length != 4)
-                      ? Colors.grey.withOpacity(0.3)
-                      : null,
-                ),
-                child: Container(
-                  alignment: Alignment.center,
-                  constraints: const BoxConstraints(minHeight: 50),
-                  child: Text(
-                    _loading ? provider.t('loading') : provider.t('verify'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Center(
-            child: TextButton(
-              onPressed: () {
-                setState(() {
-                  _step = 1;
-                  _otpController.clear();
-                });
-              },
-              child: Text(
-                provider.t('back'),
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ),
           ),
         ],
       ),

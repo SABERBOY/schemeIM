@@ -1,17 +1,35 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../models/room.dart';
 import '../models/message.dart';
 import '../models/chat_contact.dart';
 import '../constants.dart';
 
+// Shared Preferences Provider
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError();
+});
+
 // Token Provider using Notifier (Riverpod 2.x/3.x recommended approach)
 class TokenNotifier extends Notifier<String?> {
-  @override
-  String? build() => null;
+  static const _tokenKey = 'auth_token';
 
-  void setToken(String? token) {
+  @override
+  String? build() {
+    // Load initial token from storage
+    final prefs = ref.watch(sharedPreferencesProvider);
+    return prefs.getString(_tokenKey);
+  }
+
+  Future<void> setToken(String? token) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (token != null) {
+      await prefs.setString(_tokenKey, token);
+    } else {
+      await prefs.remove(_tokenKey);
+    }
     state = token;
   }
 }

@@ -1,18 +1,20 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart' as legacy_provider;
 import '../../constants.dart';
 import '../../models/user.dart';
 import '../../providers/user_provider.dart';
+import '../../services/api_service.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isEditing = false;
   late TextEditingController _nameController;
 
@@ -20,6 +22,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
   }
 
   UserRank _getRank(int gold) {
@@ -30,19 +38,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Color _hexToColor(String hex) {
-    return Color(int.parse(hex.replaceFirst('#', '0xFF')));
+    try {
+      return Color(int.parse(hex.replaceFirst('#', '0xFF')));
+    } catch (e) {
+      return Colors.grey;
+    }
   }
 
-  void _randomizeAvatar(UserProvider provider, User user) {
+  Future<void> _randomizeAvatar(UserProvider provider, User user) async {
     // Use UI Avatars for simplicity
     final random = Random().nextInt(10000);
     final newAvatar = "https://api.dicebear.com/7.x/avataaars/png?seed=$random";
-    provider.updateUser(user.copyWith(avatarUrl: newAvatar));
+    final updatedUser = user.copyWith(avatarUrl: newAvatar);
+    
+    // Update Legacy Provider
+    provider.updateUser(updatedUser);
+    
+    // Call API (Example)
+    // await ref.read(userApiProvider).updateProfile(updatedUser);
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<UserProvider>(context);
+    final provider = legacy_provider.Provider.of<UserProvider>(context);
     final user = provider.currentUser;
 
     if (!_isEditing) _nameController.text = user.displayName;
@@ -63,6 +81,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildFrameShop(user, provider),
               const SizedBox(height: 20),
               _buildSettings(user, provider),
+              const SizedBox(height: 20),
+              // Logout Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.danger,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    ref.read(tokenProvider.notifier).setToken(null);
+                    provider.logout();
+                  },
+                  child: Text(provider.t('logout')),
+                ),
+              ),
             ],
           ),
         ),
@@ -95,7 +129,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   left: -10,
                   right: -10,
                   bottom: -10,
-                  child: Image.network(user.frameUrl!, fit: BoxFit.fill),
+                  child: user.frameUrl!.startsWith('<svg') 
+                      ? const SizedBox() // Handle SVG later
+                      : Image.network(user.frameUrl!, fit: BoxFit.fill),
                 ),
               if (_isEditing)
                 Positioned(
@@ -119,35 +155,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 15),
         if (_isEditing)
           Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
                 width: 150,
                 child: TextField(
                   controller: _nameController,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  textAlign: TextAlign.center,
                   decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.all(8),
-                    border: OutlineInputBorder(),
+                    border: UnderlineInputBorder(),
+                    hintText: "Name",
+                    hintStyle: TextStyle(color: Colors.grey),
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              ElevatedButton(
+              IconButton(
+                icon: const Icon(Icons.check, color: AppTheme.success),
                 onPressed: () {
                   provider.updateUser(
-                    user.copyWith(displayName: _nameController.text),
-                  );
+                      user.copyWith(displayName: _nameController.text));
                   setState(() => _isEditing = false);
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.success,
-                ),
-                child: Text(
-                  provider.t('save'),
-                  style: const TextStyle(color: Colors.white),
-                ),
               ),
             ],
           )
@@ -213,101 +242,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
           value,
           style: TextStyle(
             color: color,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
-            fontSize: 20,
           ),
         ),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.grey, fontSize: 12),
+        ),
       ],
     );
   }
 
   Widget _buildFrameShop(User user, UserProvider provider) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Avatar Frames",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                provider.t('store'),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              TextButton(
+                onPressed: () {},
+                child: const Text("See All"),
+              ),
+            ],
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 10),
           SizedBox(
             height: 100,
-            child: ListView.separated(
+            child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: AVATAR_FRAMES.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 15),
               itemBuilder: (context, index) {
                 final frame = AVATAR_FRAMES[index];
                 final isSelected = user.frameUrl == frame.image;
+                
                 return GestureDetector(
-                  onTap: () =>
-                      provider.updateUser(user.copyWith(frameUrl: frame.image)),
-                  child: Opacity(
-                    opacity: isSelected ? 1.0 : 0.6,
+                  onTap: () {
+                    provider.updateUser(user.copyWith(frameUrl: frame.image));
+                  },
+                  child: Container(
+                    width: 80,
+                    margin: const EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppTheme.primary.withOpacity(0.2)
+                          : Colors.black26,
+                      borderRadius: BorderRadius.circular(10),
+                      border: isSelected
+                          ? Border.all(color: AppTheme.primary)
+                          : null,
+                    ),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(
-                          width: 60,
-                          height: 60,
-                          child: Stack(
-                            children: [
-                              Container(
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color(0xFF333333),
-                                ),
-                              ),
-                              if (frame.image.isNotEmpty)
-                                Positioned(
-                                  top: -6,
-                                  left: -6,
-                                  right: -6,
-                                  bottom: -6,
-                                  child: Image.network(
-                                    frame.image,
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              if (isSelected)
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    width: 15,
-                                    height: 15,
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.success,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: const Color(0xFF1E1E1E),
-                                        width: 2,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
+                        if (frame.image.isNotEmpty && !frame.image.startsWith('<svg'))
+                          Image.network(frame.image, width: 40, height: 40)
+                        else
+                          const Icon(Icons.check_box_outline_blank, color: Colors.white54),
                         const SizedBox(height: 5),
                         Text(
                           frame.name,
-                          style: TextStyle(
-                            color: isSelected
-                                ? AppTheme.secondary
-                                : Colors.white,
-                            fontSize: 10,
-                          ),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 10),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
                         ),
                       ],
                     ),
@@ -323,9 +336,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildSettings(User user, UserProvider provider) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -373,7 +386,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   provider.t('language'),
                   style: const TextStyle(color: Colors.white),
                 ),
-                const Text("English >", style: TextStyle(color: Colors.grey)),
+                InkWell(
+                  onTap: () {
+                     provider.setLanguage(provider.language == 'en' ? 'ar' : 'en');
+                  },
+                  child: Text(
+                    "${provider.language == 'en' ? 'English' : 'العربية'} >", 
+                    style: const TextStyle(color: Colors.grey)
+                  ),
+                ),
               ],
             ),
           ),
@@ -382,3 +403,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+
