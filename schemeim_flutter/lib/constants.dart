@@ -14,7 +14,8 @@ class AppTheme {
   static const Color danger = Color(0xFFD32F2F);
 }
 
-const String API_BASE_URL = 'https://api.yourdomain.com/v1';
+// const String API_BASE_URL = 'https://api.yourdomain.com/v1';
+const String API_BASE_URL = 'http://192.168.3.105:8080/api/v1';
 
 class AvatarFrame {
   final String id;

@@ -50,10 +50,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final random = Random().nextInt(10000);
     final newAvatar = "https://api.dicebear.com/7.x/avataaars/png?seed=$random";
     final updatedUser = user.copyWith(avatarUrl: newAvatar);
-    
+
     // Update Legacy Provider
     provider.updateUser(updatedUser);
-    
+
     // Call API (Example)
     // await ref.read(userApiProvider).updateProfile(updatedUser);
   }
@@ -129,7 +129,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   left: -10,
                   right: -10,
                   bottom: -10,
-                  child: user.frameUrl!.startsWith('<svg') 
+                  child: user.frameUrl!.startsWith('<svg')
                       ? const SizedBox() // Handle SVG later
                       : Image.network(user.frameUrl!, fit: BoxFit.fill),
                 ),
@@ -174,7 +174,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 icon: const Icon(Icons.check, color: AppTheme.success),
                 onPressed: () {
                   provider.updateUser(
-                      user.copyWith(displayName: _nameController.text));
+                    user.copyWith(displayName: _nameController.text),
+                  );
                   setState(() => _isEditing = false);
                 },
               ),
@@ -246,10 +247,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.grey, fontSize: 12),
-        ),
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
       ],
     );
   }
@@ -275,10 +273,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   fontSize: 18,
                 ),
               ),
-              TextButton(
-                onPressed: () {},
-                child: const Text("See All"),
-              ),
+              TextButton(onPressed: () {}, child: const Text("See All")),
             ],
           ),
           const SizedBox(height: 10),
@@ -290,7 +285,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               itemBuilder: (context, index) {
                 final frame = AVATAR_FRAMES[index];
                 final isSelected = user.frameUrl == frame.image;
-                
+
                 return GestureDetector(
                   onTap: () {
                     provider.updateUser(user.copyWith(frameUrl: frame.image));
@@ -310,15 +305,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (frame.image.isNotEmpty && !frame.image.startsWith('<svg'))
+                        if (frame.image.isNotEmpty &&
+                            !frame.image.startsWith('<svg'))
                           Image.network(frame.image, width: 40, height: 40)
                         else
-                          const Icon(Icons.check_box_outline_blank, color: Colors.white54),
+                          const Icon(
+                            Icons.check_box_outline_blank,
+                            color: Colors.white54,
+                          ),
                         const SizedBox(height: 5),
                         Text(
                           frame.name,
                           style: const TextStyle(
-                              color: Colors.white, fontSize: 10),
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
                           textAlign: TextAlign.center,
                           maxLines: 1,
                         ),
@@ -361,13 +362,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: TextStyle(color: Colors.white),
               ),
               Switch(
-                value: user.privacy.showSocialList,
+                value: user.privacy?.showSocialList ?? false,
                 onChanged: (val) {
                   provider.updateUser(
                     user.copyWith(
                       privacy: UserPrivacy(
                         showSocialList: val,
-                        showOnlineStatus: user.privacy.showOnlineStatus,
+                        showOnlineStatus:
+                            user.privacy?.showOnlineStatus ?? false,
                       ),
                     ),
                   );
@@ -388,11 +390,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 InkWell(
                   onTap: () {
-                     provider.setLanguage(provider.language == 'en' ? 'ar' : 'en');
+                    provider.setLanguage(
+                      provider.language == 'en' ? 'ar' : 'en',
+                    );
                   },
                   child: Text(
-                    "${provider.language == 'en' ? 'English' : 'العربية'} >", 
-                    style: const TextStyle(color: Colors.grey)
+                    "${provider.language == 'en' ? 'English' : 'العربية'} >",
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ),
               ],
@@ -403,4 +407,3 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 }
-

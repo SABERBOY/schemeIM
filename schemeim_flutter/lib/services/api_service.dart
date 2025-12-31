@@ -1,11 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/user.dart';
-import '../models/room.dart';
-import '../models/message.dart';
-import '../models/chat_contact.dart';
+
 import '../constants.dart';
+import '../models/api_response.dart';
+import '../models/chat_contact.dart';
+import '../models/login_response.dart';
+import '../models/message.dart';
+import '../models/room.dart';
+import '../models/user.dart';
 
 // Shared Preferences Provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -69,6 +72,7 @@ final dioProvider = Provider<Dio>((ref) {
     InterceptorsWrapper(
       onRequest: (options, handler) {
         // Add token to headers if available
+        // Note: AuthApi requests generally won't have a token yet, which is expected.
         final token = ref.read(tokenProvider);
         if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
@@ -108,6 +112,7 @@ final economyApiProvider = Provider<EconomyApi>(
 // Base API Class
 abstract class BaseApi {
   final Dio dio;
+
   BaseApi(this.dio);
 }
 
@@ -117,28 +122,35 @@ class AuthApi extends BaseApi {
   Future<bool> sendOtp(String phone) async {
     try {
       // Real implementation example:
-      // await dio.post('/auth/send-otp', data: {'phone': phone});
+      final response = await dio.post('/auth/send-otp', data: {'phone': phone});
+      print('Send OTP Response: ${response.data}');
 
-      // Mock implementation:
-      await Future.delayed(const Duration(seconds: 1));
-      return true;
+      final apiResponse = ApiResponse<Map<String, dynamic>>.fromJson(
+        response.data,
+        (json) => json as Map<String, dynamic>,
+      );
+
+      return apiResponse.code == 200;
     } on DioException catch (e) {
       throw _handleError(e);
     }
   }
 
-  Future<User> login(String phone, String code) async {
+  Future<LoginResponse> login(String phone, String code) async {
     try {
       // Real implementation example:
-      // final response = await dio.post('/auth/login', data: {
-      //   'phone': phone,
-      //   'code': code,
-      // });
-      // return User.fromJson(response.data);
+      final response = await dio.post(
+        '/auth/login',
+        data: {'phone': phone, 'code': code},
+      );
+      print('Login Response: ${response.data}');
 
-      // Mock implementation:
-      await Future.delayed(const Duration(seconds: 1));
-      return _mockCurrentUser;
+      final apiResponse = ApiResponse<LoginResponse>.fromJson(
+        response.data,
+        (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -150,9 +162,15 @@ class UserApi extends BaseApi {
 
   Future<User> getProfile() async {
     try {
-      // final response = await dio.get('/user/profile');
-      // return User.fromJson(response.data);
-      return _mockCurrentUser;
+      final response = await dio.get('/user/profile');
+      print('Get Profile Response: ${response.data}');
+
+      final apiResponse = ApiResponse<User>.fromJson(
+        response.data,
+        (json) => User.fromJson(json as Map<String, dynamic>),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -160,13 +178,15 @@ class UserApi extends BaseApi {
 
   Future<User> updateProfile(User updates) async {
     try {
-      // final response = await dio.put('/user/profile', data: updates.toJson());
-      // return User.fromJson(response.data);
+      final response = await dio.put('/user/profile', data: updates.toJson());
+      print('Update Profile Response: ${response.data}');
 
-      // Update mock (in memory only)
-      // Note: In real app, we don't need to update static mock,
-      // the server update is enough.
-      return updates;
+      final apiResponse = ApiResponse<User>.fromJson(
+        response.data,
+        (json) => User.fromJson(json as Map<String, dynamic>),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -178,62 +198,17 @@ class RoomApi extends BaseApi {
 
   Future<List<Room>> list() async {
     try {
-      // final response = await dio.get('/rooms');
-      // return (response.data as List).map((e) => Room.fromJson(e)).toList();
+      final response = await dio.get('/rooms');
+      print('List Rooms Response: ${response.data}');
 
-      return [
-        Room(
-          id: '1',
-          title: 'Dubai Chill 🌴',
-          countryFlag: '🇦🇪',
-          tags: ['Music', 'Chat'],
-          host: _mockCurrentUser.copyWith(
-            id: 'h1',
-            displayName: 'Ahmed',
-            avatarUrl:
-                'https://cdn-icons-png.flaticon.com/512/4825/4825038.png',
-            frameUrl: AVATAR_FRAMES[3].image,
-            goldBalance: 0,
-          ),
-          seats: [],
-          onlineCount: 120,
-          description: 'Best vibes in Dubai',
-        ),
-        Room(
-          id: '2',
-          title: 'Riyadh Nights 🌙',
-          countryFlag: '🇸🇦',
-          tags: ['Poetry'],
-          host: _mockCurrentUser.copyWith(
-            id: 'h2',
-            displayName: 'Sarah',
-            avatarUrl:
-                'https://cdn-icons-png.flaticon.com/512/4825/4825112.png',
-            frameUrl: '',
-            goldBalance: 0,
-          ),
-          seats: [],
-          onlineCount: 85,
-          description: 'Poetry and Coffee',
-        ),
-        Room(
-          id: '3',
-          title: 'Cairo Vibes 🇪🇬',
-          countryFlag: '🇪🇬',
-          tags: ['Funny'],
-          host: _mockCurrentUser.copyWith(
-            id: 'h3',
-            displayName: 'Omar',
-            avatarUrl:
-                'https://cdn-icons-png.flaticon.com/512/4825/4825044.png',
-            frameUrl: AVATAR_FRAMES[2].image,
-            goldBalance: 0,
-          ),
-          seats: [],
-          onlineCount: 200,
-          description: 'Jokes all night',
-        ),
-      ];
+      final apiResponse = ApiResponse<List<Room>>.fromJson(
+        response.data,
+        (json) => (json as List)
+            .map((e) => Room.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -241,9 +216,15 @@ class RoomApi extends BaseApi {
 
   Future<Room> create(Room room) async {
     try {
-      // final response = await dio.post('/rooms', data: room.toJson());
-      // return Room.fromJson(response.data);
-      return room;
+      final response = await dio.post('/rooms', data: room.toJson());
+      print('Create Room Response: ${response.data}');
+
+      final apiResponse = ApiResponse<Room>.fromJson(
+        response.data,
+        (json) => Room.fromJson(json as Map<String, dynamic>),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -255,9 +236,17 @@ class ChatApi extends BaseApi {
 
   Future<List<ChatContact>> listContacts() async {
     try {
-      // final response = await dio.get('/chat/contacts');
-      // return ...
-      return MOCK_CHATS;
+      final response = await dio.get('/chat/contacts');
+      print('List Contacts Response: ${response.data}');
+
+      final apiResponse = ApiResponse<List<ChatContact>>.fromJson(
+        response.data,
+        (json) => (json as List)
+            .map((e) => ChatContact.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -265,8 +254,15 @@ class ChatApi extends BaseApi {
 
   Future<Message> send(Message msg) async {
     try {
-      // await dio.post('/chat/send', data: msg.toJson());
-      return msg;
+      final response = await dio.post('/chat/send', data: msg.toJson());
+      print('Send Message Response: ${response.data}');
+
+      final apiResponse = ApiResponse<Message>.fromJson(
+        response.data,
+        (json) => Message.fromJson(json as Map<String, dynamic>),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -278,8 +274,24 @@ class EconomyApi extends BaseApi {
 
   Future<List<Gift>> listGifts() async {
     try {
-      // final response = await dio.get('/economy/gifts');
-      return GIFTS;
+      final response = await dio.get('/economy/gifts');
+      print('List Gifts Response: ${response.data}');
+
+      final apiResponse = ApiResponse<List<Gift>>.fromJson(response.data, (
+        json,
+      ) {
+        return (json as List).map((e) {
+          final map = e as Map<String, dynamic>;
+          return Gift(
+            id: map['id'] ?? '',
+            name: map['name'] ?? '',
+            icon: map['icon'] ?? '',
+            cost: map['cost'] ?? 0,
+          );
+        }).toList();
+      });
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -303,19 +315,6 @@ String _handleError(DioException e) {
   }
   return 'Connection error: ${e.message}';
 }
-
-// Temporary Mock Data (moved from static to top-level for internal usage)
-final User _mockCurrentUser = User(
-  id: 'user_123',
-  displayName: 'Habibi King',
-  avatarUrl: 'https://cdn-icons-png.flaticon.com/512/147/147142.png',
-  frameUrl: AVATAR_FRAMES[1].image,
-  goldBalance: 500,
-  level: 5,
-  isVerified: true,
-  privacy: UserPrivacy(showSocialList: true, showOnlineStatus: true),
-  rank: UserRank(rankName: 'Noble', colorHex: '#CD7F32'),
-);
 
 // Backward Compatibility Class (Optional, but helps migration)
 // TODO: Remove this after full migration to Riverpod providers

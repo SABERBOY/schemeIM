@@ -1,3 +1,7 @@
+import 'package:json_annotation/json_annotation.dart';
+part 'chat_contact.g.dart';
+
+@JsonSerializable()
 class ChatContact {
   final String id;
   final String name;
@@ -16,5 +20,9 @@ class ChatContact {
     required this.time,
     this.isAi,
   });
+
+  factory ChatContact.fromJson(Map<String, dynamic> json) => _$ChatContactFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ChatContactToJson(this);
 }
 

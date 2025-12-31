@@ -1,5 +1,8 @@
 import 'user.dart';
+import 'package:json_annotation/json_annotation.dart';
+part 'room.g.dart';
 
+@JsonSerializable()
 class Room {
   final String id;
   final String title;
@@ -20,8 +23,13 @@ class Room {
     required this.seats,
     required this.onlineCount,
   });
+
+  factory Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RoomToJson(this);
 }
 
+@JsonSerializable()
 class RoomSeat {
   final int index;
   final String? userId;
@@ -36,4 +44,8 @@ class RoomSeat {
     required this.isMuted,
     required this.isLocked,
   });
+
+  factory RoomSeat.fromJson(Map<String, dynamic> json) => _$RoomSeatFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RoomSeatToJson(this);
 }

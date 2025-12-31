@@ -59,43 +59,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _startTimer();
       }
     } catch (e) {
-       print("Send OTP failed: $e");
-       if (mounted) {
-         setState(() => _loading = false);
-         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('Failed to send OTP: $e')),
-         );
-       }
+      print("Send OTP failed: $e");
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to send OTP: $e')));
+      }
     }
   }
 
   Future<void> _handleVerify() async {
-    if (_otpController.text.length != 4) return;
+    if (_otpController.text.length != 6) return;
     setState(() => _loading = true);
 
     try {
       final authApi = ref.read(authApiProvider);
-      final user = await authApi.login(_phoneController.text, _otpController.text);
-      
+      final loginResponse = await authApi.login(
+        _phoneController.text,
+        _otpController.text,
+      );
+      final user = loginResponse.user;
+      final token = loginResponse.token;
+
       // 1. Update Riverpod Token
-      ref.read(tokenProvider.notifier).setToken("mock_jwt_token_123");
+      ref.read(tokenProvider.notifier).setToken(token);
 
       // 2. Update Legacy UserProvider
       if (mounted) {
-        final legacyUserProvider = legacy_provider.Provider.of<UserProvider>(context, listen: false);
+        final legacyUserProvider = legacy_provider.Provider.of<UserProvider>(
+          context,
+          listen: false,
+        );
         legacyUserProvider.updateUser(user);
       }
-      
+
       // 3. Init IM
       await _initIM(context, user.id);
-      
     } catch (e) {
       print("Login failed: $e");
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('Login failed: $e')),
-         );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
       }
     }
   }
@@ -106,7 +113,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       context,
       listen: false,
     );
-    
+
     // Listen for network changes
     engineProvider.networkChangeNotifier.addListener(() {
       final status = engineProvider.networkChangeNotifier.value;
@@ -117,7 +124,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       final options = RCIMIWEngineOptions.create();
-      final engine = await engineProvider.engineCreate("25wehl3u2f7mw", options);
+      final engine = await engineProvider.engineCreate(
+        "25wehl3u2f7mw",
+        options,
+      );
 
       await engineProvider.engineConnect(
         "Egm3GqRPlKChKr9rmAzUn92Vex2o7ROV@i6h3.cn.rongnav.com;i6h3.cn.rongcfg.com",
@@ -129,16 +139,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               'CustomMessageType',
               RCIMIWNativeCustomMessagePersistentFlag.persisted,
             );
-            
+
             if (mounted) {
-              legacy_provider.Provider.of<UserProvider>(context, listen: false).completeLogin();
+              legacy_provider.Provider.of<UserProvider>(
+                context,
+                listen: false,
+              ).completeLogin();
             }
           } else {
             print("IM connect failed: $code");
             if (mounted) {
               setState(() => _loading = false);
               ScaffoldMessenger.of(context).showSnackBar(
-                 SnackBar(content: Text('IM Connection Failed: $code')),
+                SnackBar(content: Text('IM Connection Failed: $code')),
               );
             }
           }
@@ -276,12 +289,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     value: _countryCode,
                     dropdownColor: const Color(0xFF2C2C2C),
                     style: const TextStyle(color: Colors.white),
-                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                    icon: const Icon(
+                      Icons.arrow_drop_down,
+                      color: Colors.white70,
+                    ),
                     items: ['+971', '+966', '+20', '+1']
-                        .map((code) => DropdownMenuItem(
-                              value: code,
-                              child: Text(code),
-                            ))
+                        .map(
+                          (code) =>
+                              DropdownMenuItem(value: code, child: Text(code)),
+                        )
                         .toList(),
                     onChanged: (val) {
                       if (val != null) setState(() => _countryCode = val);
@@ -289,11 +305,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                Container(
-                  width: 1,
-                  height: 24,
-                  color: Colors.white24,
-                ),
+                Container(width: 1, height: 24, color: Colors.white24),
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
@@ -303,7 +315,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: provider.t('phonePlaceholder'),
-                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+                      hintStyle: TextStyle(
+                        color: Colors.white.withOpacity(0.3),
+                      ),
                     ),
                   ),
                 ),
@@ -365,7 +379,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
-              maxLength: 4,
+              maxLength: 6,
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 counterText: '',

@@ -29,7 +29,9 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<void> authenticate(String phone, String code) async {
-    final user = await ApiService.auth.login(phone, code);
+    final loginResponse = await ApiService.auth.login(phone, code);
+    final user = loginResponse.user;
+    final token = loginResponse.token;
     _currentUser = user;
     // Authentication successful, but not yet logged in (waiting for IM)
   }
