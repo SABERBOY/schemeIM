@@ -7,6 +7,7 @@ import '../models/api_response.dart';
 import '../models/chat_contact.dart';
 import '../models/login_response.dart';
 import '../models/message.dart';
+import '../models/paginated_response.dart';
 import '../models/room.dart';
 import '../models/user.dart';
 
@@ -201,14 +202,15 @@ class RoomApi extends BaseApi {
       final response = await dio.get('/rooms');
       print('List Rooms Response: ${response.data}');
 
-      final apiResponse = ApiResponse<List<Room>>.fromJson(
+      final apiResponse = ApiResponse<PaginatedResponse<Room>>.fromJson(
         response.data,
-        (json) => (json as List)
-            .map((e) => Room.fromJson(e as Map<String, dynamic>))
-            .toList(),
+        (json) => PaginatedResponse<Room>.fromJson(
+          json as Map<String, dynamic>,
+          (itemJson) => Room.fromJson(itemJson as Map<String, dynamic>),
+        ),
       );
 
-      return apiResponse.data;
+      return apiResponse.data.list;
     } on DioException catch (e) {
       throw _handleError(e);
     }
