@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/* import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rongcloud_im_kit/rongcloud_im_kit.dart';
 import 'package:rongcloud_im_kit/ui_config/chat/page/chat_app_bar_config.dart';
@@ -73,3 +73,4 @@ class ConversationListScreen extends StatelessWidget {
     );
   }
 }
+ */

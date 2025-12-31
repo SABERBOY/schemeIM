@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' as legacy_provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rongcloud_im_kit/rongcloud_im_kit.dart';
+// import 'package:rongcloud_im_kit/rongcloud_im_kit.dart';
 import '../../constants.dart';
 import '../../providers/user_provider.dart';
 import '../../services/api_service.dart';
@@ -95,7 +95,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
 
       // 3. Init IM
-      await _initIM(context, user.id);
+      // await _initIM(context, user.id);
     } catch (e) {
       print("Login failed: $e");
       if (mounted) {
@@ -107,7 +107,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<void> _initIM(BuildContext context, String userId) async {
+  /* Future<void> _initIM(BuildContext context, String userId) async {
     // Access Legacy RCKEngineProvider
     final engineProvider = legacy_provider.Provider.of<RCKEngineProvider>(
       context,
@@ -161,7 +161,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       print("IM Init Error: $e");
       if (mounted) setState(() => _loading = false);
     }
-  }
+  } */
 
   void _handleResend() {
     if (_timer > 0) return;

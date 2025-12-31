@@ -8,7 +8,7 @@ import 'screens/main_screen.dart';
 import 'screens/login_screen.dart';
 import 'constants.dart';
 import 'services/api_service.dart';
-import 'package:rongcloud_im_kit/app_providers.dart'; // 引入Provider配置
+// import 'package:rongcloud_im_kit/app_providers.dart'; // 引入Provider配置
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,13 +22,14 @@ void main() async {
         // Override sharedPreferencesProvider with the initialized instance
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: RongCloudAppProviders.of(
+      /*child: RongCloudAppProviders.of(
         MyApp(), // 你的根组件
         additionalProviders: [
           // 可以添加额外的Provider
           // ...
         ],
-      ),
+      ),*/
+      child: const MyApp(),
     ),
   );
 }
