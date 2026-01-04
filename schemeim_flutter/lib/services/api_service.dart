@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -5,11 +7,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
 import '../models/api_response.dart';
 import '../models/chat_contact.dart';
-import '../models/login_response.dart';
 import '../models/message.dart';
 import '../models/paginated_response.dart';
 import '../models/room.dart';
 import '../models/user.dart';
+import '../protos/messages/auth.pb.dart';
+import 'package:schemeim_flutter/protos/models/common.pb.dart' as common;
+
 
 // Shared Preferences Provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -126,12 +130,14 @@ class AuthApi extends BaseApi {
       final response = await dio.post('/auth/send-otp', data: {'phone': phone});
       print('Send OTP Response: ${response.data}');
 
-      final apiResponse = ApiResponse<Map<String, dynamic>>.fromJson(
+      /* final apiResponse = ApiResponse<Map<String, dynamic>>.fromJson(
         response.data,
         (json) => json as Map<String, dynamic>,
-      );
+      ); */
+      final common.Response apiResponse = common.Response()..mergeFromProto3Json(response.data);
+      print('Send OTP Response: ${apiResponse.toString()}');
 
-      return apiResponse.code == 200;
+      return response.statusCode == 200 && apiResponse.code == 200;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -139,17 +145,21 @@ class AuthApi extends BaseApi {
 
   Future<LoginResponse> login(String phone, String code) async {
     try {
-      // Real implementation example:
+      final request = LoginRequest(phone: phone, code: code);
       final response = await dio.post(
         '/auth/login',
-        data: {'phone': phone, 'code': code},
+        data: request.toProto3Json(),
       );
       print('Login Response: ${response.data}');
 
-      final apiResponse = ApiResponse<LoginResponse>.fromJson(
-        response.data,
-        (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
-      );
+      final apiResponse = ApiResponse<LoginResponse>.fromJson(response.data, (
+        json,
+      ) {
+        // Parse JSON into Protobuf LoginResponse
+        // LoginResponse.create() creates empty instance, mergeFromJson populates it
+        final proto = LoginResponse.create()..mergeFromProto3Json(json);
+        return proto;
+      });
 
       return apiResponse.data;
     } on DioException catch (e) {
@@ -218,7 +228,7 @@ class RoomApi extends BaseApi {
 
   Future<Room> create(Room room) async {
     try {
-      final response = await dio.post('/rooms', data: room.toJson());
+      final response = await dio.post('/chatrooms', data: room.toJson());
       print('Create Room Response: ${response.data}');
 
       final apiResponse = ApiResponse<Room>.fromJson(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/user.dart';
+// import '../models/user.dart';
+import '../protos/models/user.pb.dart';
 import '../services/api_service.dart';
 import '../constants.dart';
 
@@ -7,21 +8,14 @@ class UserProvider with ChangeNotifier {
   bool _isLoggedIn = false;
   String _language = 'en';
 
-  User _currentUser = User(
-    id: 'user_123',
-    displayName: 'Habibi King',
-    avatarUrl: 'https://cdn-icons-png.flaticon.com/512/147/147142.png',
-    frameUrl: AVATAR_FRAMES[1].image,
-    goldBalance: 500,
-    level: 5,
-    isVerified: true,
-    privacy: UserPrivacy(showSocialList: true, showOnlineStatus: true),
-    rank: UserRank(rankName: 'Noble', colorHex: '#CD7F32'),
-  );
+  User _currentUser = User.getDefault();
+  String _token = '';
 
   bool get isLoggedIn => _isLoggedIn;
   String get language => _language;
   User get currentUser => _currentUser;
+
+  String get token => _token;
 
   void updateUser(User user) {
     _currentUser = user;
@@ -33,6 +27,7 @@ class UserProvider with ChangeNotifier {
     final user = loginResponse.user;
     final token = loginResponse.token;
     _currentUser = user;
+    _token = token;
     // Authentication successful, but not yet logged in (waiting for IM)
   }
 

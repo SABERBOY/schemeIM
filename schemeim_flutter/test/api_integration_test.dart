@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 import 'package:schemeim_flutter/constants.dart';
@@ -5,6 +7,7 @@ import 'package:schemeim_flutter/services/api_service.dart';
 import 'package:schemeim_flutter/models/user.dart';
 import 'package:schemeim_flutter/models/room.dart';
 import 'package:schemeim_flutter/models/login_response.dart';
+import 'package:schemeim_flutter/protos/models/common.pb.dart' as common;
 
 void main() {
   late Dio dio;
@@ -34,6 +37,18 @@ void main() {
   });
 
   group('API Integration Tests', () {
+    // test data
+    test('0. Test data', () async {
+      const data = '{"code": 200, "message": "success", "data": {}}';
+      // Use mergeFromProto3Json for standard JSON parsing
+      final common.Response response = common.Response()
+        ..mergeFromProto3Json(json.decode(data));
+      print('Response: ${response.toString()}');
+      expect(response.code, equals(200));
+      expect(response.message, equals('success'));
+      expect(response.hasData(), isTrue);
+    });
+
     // 1. Auth Tests
     test('1. AuthApi: sendOtp returns success', () async {
       const phone = '501234567';
