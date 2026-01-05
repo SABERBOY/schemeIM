@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package models;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "middle-east-im-server/pkg/pb/models";
+
+// 通用响应结构
+message Response {
+  int32 code = 1;
+  string message = 2;
+  google.protobuf.Struct data = 3; // 使用 Struct 作为通用数据类型
+}

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package models;
+
+import "google/protobuf/timestamp.proto";
+import "models/user.proto";
+
+option go_package = "middle-east-im-server/pkg/pb/models";
+
+// 聊天室模型
+message Room {
+  string id = 1;
+  string title = 2;
+  string country_flag = 3;
+  string tags = 4;
+  string host_id = 5;
+  User host = 6;
+  string description = 7;
+  int32 online_count = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}

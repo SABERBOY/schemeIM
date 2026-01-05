@@ -44,6 +44,21 @@ final $typed_data.Uint8List chatRoomCreateRequestDescriptor = $convert.base64Dec
     'Vpc0JhbhIkCg53aGl0ZV91c2VyX2lkcxgKIAMoCVIMd2hpdGVVc2VySWRzEh8KC25lZWRfbm90'
     'aWZ5GAsgASgIUgpuZWVkTm90aWZ5EhQKBWV4dHJhGAwgASgJUgVleHRyYQ==');
 
+@$core.Deprecated('Use chatRoomCreateResponseDescriptor instead')
+const ChatRoomCreateResponse$json = {
+  '1': 'ChatRoomCreateResponse',
+  '2': [
+    {'1': 'chatroom_id', '3': 1, '4': 1, '5': 9, '10': 'chatroomId'},
+    {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `ChatRoomCreateResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List chatRoomCreateResponseDescriptor =
+    $convert.base64Decode(
+        'ChZDaGF0Um9vbUNyZWF0ZVJlc3BvbnNlEh8KC2NoYXRyb29tX2lkGAEgASgJUgpjaGF0cm9vbU'
+        'lkEhgKB21lc3NhZ2UYBiABKAlSB21lc3NhZ2U=');
+
 @$core.Deprecated('Use micRequestDescriptor instead')
 const MicRequest$json = {
   '1': 'MicRequest',

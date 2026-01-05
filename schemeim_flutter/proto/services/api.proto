@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package services;
+
+import "models/common.proto";
+import "models/user.proto";
+import "models/room.proto";
+import "models/wallet.proto";
+import "models/social.proto";
+import "models/game.proto";
+import "messages/auth.proto";
+import "messages/user.proto";
+import "messages/wallet.proto";
+import "messages/social.proto";
+import "messages/game.proto";
+import "messages/chatroom.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "middle-east-im-server/pkg/pb/services";
+
+// 认证服务
+service AuthService {
+  rpc SendOTP(messages.SendOTPRequest) returns (models.Response);
+  rpc Login(messages.LoginRequest) returns (messages.LoginResponse);
+}
+
+// 用户服务
+service UserService {
+  rpc GetProfile(google.protobuf.Empty) returns (models.Response);
+  rpc UpdateProfile(messages.UpdateProfileRequest) returns (models.Response);
+  rpc SearchUsers(messages.SearchUsersRequest) returns (messages.SearchUsersResponse);
+}
+
+// 钱包服务
+service WalletService {
+  rpc GetWallet(google.protobuf.Empty) returns (models.Response);
+  rpc Recharge(messages.RechargeRequest) returns (models.Response);
+  rpc ListGifts(google.protobuf.Empty) returns (models.Response);
+  rpc SendGift(messages.SendGiftRequest) returns (models.Response);
+}
+
+// 社交服务
+service SocialService {
+  rpc ListFriends(google.protobuf.Empty) returns (models.Response);
+  rpc AddFriend(messages.AddFriendRequest) returns (models.Response);
+  rpc AcceptFriend(messages.AddFriendRequest) returns (models.Response);
+  rpc FollowUser(messages.FollowRequest) returns (models.Response);
+}
+
+// 游戏服务
+service GameService {
+  rpc ListGames(google.protobuf.Empty) returns (models.Response);
+  rpc CreateTable(messages.CreateTableRequest) returns (models.Response);
+  rpc JoinTable(messages.JoinTableRequest) returns (models.Response);
+}
+
+// 聊天室服务
+service ChatRoomService {
+  // 聊天室管理
+  rpc ListChatRooms(google.protobuf.Empty) returns (models.Response);
+  rpc CreateChatRoom(messages.ChatRoomCreateRequest) returns (models.Response);
+  rpc DestroyChatRoom(ChatRoomIdRequest) returns (models.Response);
+  rpc GetChatRoomInfo(ChatRoomIdRequest) returns (models.Response);
+  rpc QueryChatRooms(messages.QueryChatRoomsRequest) returns (messages.ChatRoomListResponse);
+
+  // 麦位管理
+  rpc ManageMic(ChatRoomMicRequest) returns (models.Response);
+
+  // 成员管理
+  rpc GetChatRoomUsers(ChatRoomIdRequest) returns (messages.UserListResponse);
+  rpc CheckUserInChatRoom(ChatRoomUserRequest) returns (models.Response);
+  rpc CheckUsersInChatRoom(ChatRoomUsersRequest) returns (models.Response);
+
+  // 封禁管理
+  rpc BlockUsers(ChatRoomBatchUsersRequest) returns (models.Response);
+  rpc UnblockUsers(ChatRoomBatchUsersRequest) returns (models.Response);
+  rpc GetBlockedUsers(ChatRoomIdRequest) returns (messages.StringListResponse);
+
+  // 禁言管理
+  rpc GagUsers(ChatRoomBatchUsersRequest) returns (models.Response);
+  rpc UngagUsers(ChatRoomBatchUsersRequest) returns (models.Response);
+  rpc GetGaggedUsers(ChatRoomIdRequest) returns (messages.StringListResponse);
+
+  // 消息管理
+  rpc AddMessageDemotion(messages.MessageDemotionRequest) returns (models.Response);
+  rpc RemoveMessageDemotion(messages.MessageDemotionRequest) returns (models.Response);
+  rpc GetMessageDemotionList(google.protobuf.Empty) returns (messages.StringListResponse);
+  rpc AddWhitelistMessageType(messages.WhitelistMessageTypeRequest) returns (models.Response);
+  rpc RemoveWhitelistMessageType(messages.WhitelistMessageTypeRequest) returns (models.Response);
+  rpc GetWhitelistMessageTypes(google.protobuf.Empty) returns (messages.StringListResponse);
+
+  // 消息分发控制
+  rpc StopMessageDistribution(ChatRoomIdRequest) returns (models.Response);
+  rpc ResumeMessageDistribution(ChatRoomIdRequest) returns (models.Response);
+
+  // 保活管理
+  rpc AddKeepAliveChatRoom(ChatRoomIdRequest) returns (models.Response);
+  rpc RemoveKeepAliveChatRoom(ChatRoomIdRequest) returns (models.Response);
+  rpc GetKeepAliveChatRooms(google.protobuf.Empty) returns (messages.StringListResponse);
+
+  // 白名单用户管理
+  rpc AddWhitelistUsers(ChatRoomWhitelistUsersRequest) returns (models.Response);
+  rpc RemoveWhitelistUsers(ChatRoomWhitelistUsersRequest) returns (models.Response);
+  rpc GetWhitelistUsers(ChatRoomIdRequest) returns (messages.StringListResponse);
+
+  // 属性管理
+  rpc SetChatRoomAttributes(ChatRoomAttributeRequest) returns (models.Response);
+  rpc RemoveChatRoomAttributes(ChatRoomAttributeRequest) returns (models.Response);
+  rpc GetChatRoomAttributes(ChatRoomIdRequest) returns (models.Response);
+
+  // 全员禁言
+  rpc BanAllUsers(ChatRoomBanAllRequest) returns (models.Response);
+  rpc UnbanAllUsers(ChatRoomIdRequest) returns (models.Response);
+  rpc GetBannedChatRooms(google.protobuf.Empty) returns (messages.StringListResponse);
+  rpc CheckChatRoomBanStatus(ChatRoomIdRequest) returns (models.Response);
+
+  // 禁言白名单
+  rpc AddUserBanWhitelist(ChatRoomBanWhitelistUsersRequest) returns (models.Response);
+  rpc RemoveUserBanWhitelist(ChatRoomBanWhitelistUsersRequest) returns (models.Response);
+  rpc GetUserBanWhitelist(ChatRoomIdRequest) returns (messages.StringListResponse);
+}
+
+// 辅助消息定义
+message ChatRoomIdRequest {
+  string chatroom_id = 1;
+}
+
+message ChatRoomMicRequest {
+  string chatroom_id = 1;
+  messages.MicRequest mic_request = 2;
+}
+
+message ChatRoomUserRequest {
+  string chatroom_id = 1;
+  string user_id = 2;
+}
+
+message ChatRoomUsersRequest {
+  string chatroom_id = 1;
+  repeated string user_ids = 2;
+}
+
+message ChatRoomBatchUsersRequest {
+  string chatroom_id = 1;
+  messages.BatchUsersRequest batch_request = 2;
+}
+
+message ChatRoomWhitelistUsersRequest {
+  string chatroom_id = 1;
+  messages.WhitelistUsersRequest whitelist_request = 2;
+}
+
+message ChatRoomAttributeRequest {
+  string chatroom_id = 1;
+  messages.ChatRoomAttributeRequest attribute_request = 2;
+}
+
+message ChatRoomBanAllRequest {
+  string chatroom_id = 1;
+  messages.BanAllUsersRequest ban_request = 2;
+}
+
+message ChatRoomBanWhitelistUsersRequest {
+  string chatroom_id = 1;
+  messages.BanWhitelistUsersRequest whitelist_request = 2;
+}

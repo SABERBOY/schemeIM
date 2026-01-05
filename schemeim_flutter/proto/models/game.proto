@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package models;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "middle-east-im-server/pkg/pb/models";
+
+// 游戏桌状态枚举
+enum GameTableStatus {
+  GAME_TABLE_STATUS_WAITING = 0;
+  GAME_TABLE_STATUS_PLAYING = 1;
+  GAME_TABLE_STATUS_FINISHED = 2;
+}
+
+// 游戏
+message Game {
+  string id = 1;
+  string name = 2;
+  string icon_url = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+// 游戏桌
+message GameTable {
+  string id = 1;
+  string game_id = 2;
+  string room_id = 3;
+  string creator_id = 4;
+  string config = 5;
+  GameTableStatus status = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}

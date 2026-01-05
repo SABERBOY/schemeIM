@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package messages;
+
+import "models/wallet.proto";
+import "models/common.proto";
+
+option go_package = "middle-east-im-server/pkg/pb/messages";
+
+// 充值请求
+message RechargeRequest {
+  int64 amount = 1;
+}
+
+// 发送礼物请求
+message SendGiftRequest {
+  string to_user_id = 1;
+  string gift_id = 2;
+}

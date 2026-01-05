@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package models;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "middle-east-im-server/pkg/pb/models";
+
+// 好友关系状态枚举
+enum FriendStatus {
+  FRIEND_STATUS_REQUESTED = 0;
+  FRIEND_STATUS_ACCEPTED = 1;
+}
+
+// 好友关系
+message Friend {
+  string user_id = 1;
+  string friend_id = 2;
+  FriendStatus status = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+// 关注关系
+message Follow {
+  string follower_id = 1;
+  string following_id = 2;
+  google.protobuf.Timestamp created_at = 3;
+}

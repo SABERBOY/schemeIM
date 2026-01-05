@@ -21,18 +21,11 @@ const Response$json = {
   '2': [
     {'1': 'code', '3': 1, '4': 1, '5': 5, '10': 'code'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'data',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Struct',
-      '10': 'data'
-    },
+    {'1': 'data', '3': 3, '4': 1, '5': 12, '10': 'data'},
   ],
 };
 
 /// Descriptor for `Response`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List responseDescriptor = $convert.base64Decode(
     'CghSZXNwb25zZRISCgRjb2RlGAEgASgFUgRjb2RlEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2'
-    'USKwoEZGF0YRgDIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3RSBGRhdGE=');
+    'USEgoEZGF0YRgDIAEoDFIEZGF0YQ==');

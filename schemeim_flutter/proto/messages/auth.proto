@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package messages;
+
+import "models/user.proto";
+
+option go_package = "middle-east-im-server/pkg/pb/messages";
+
+// 发送验证码请求
+message SendOTPRequest {
+  string phone = 1;
+}
+
+// 发送验证码响应
+message SendOTPResponse {
+  // 空响应，数据层不需要返回额外信息
+}
+
+// 登录请求
+message LoginRequest {
+  string phone = 1;
+  string code = 2;
+}
+
+// 登录响应
+message LoginResponse {
+  string token = 1;
+  models.User user = 2;
+}

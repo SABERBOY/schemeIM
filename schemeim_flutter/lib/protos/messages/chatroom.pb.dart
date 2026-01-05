@@ -202,6 +202,74 @@ class ChatRoomCreateRequest extends $pb.GeneratedMessage {
   void clearExtra() => $_clearField(12);
 }
 
+/// 创建聊天室响应
+class ChatRoomCreateResponse extends $pb.GeneratedMessage {
+  factory ChatRoomCreateResponse({
+    $core.String? chatroomId,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (chatroomId != null) result.chatroomId = chatroomId;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  ChatRoomCreateResponse._();
+
+  factory ChatRoomCreateResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ChatRoomCreateResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ChatRoomCreateResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'messages'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'chatroomId')
+    ..aOS(6, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ChatRoomCreateResponse clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ChatRoomCreateResponse copyWith(
+          void Function(ChatRoomCreateResponse) updates) =>
+      super.copyWith((message) => updates(message as ChatRoomCreateResponse))
+          as ChatRoomCreateResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ChatRoomCreateResponse create() => ChatRoomCreateResponse._();
+  @$core.override
+  ChatRoomCreateResponse createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static ChatRoomCreateResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ChatRoomCreateResponse>(create);
+  static ChatRoomCreateResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get chatroomId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set chatroomId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasChatroomId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearChatroomId() => $_clearField(1);
+
+  @$pb.TagNumber(6)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(6)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(6)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(6)
+  void clearMessage() => $_clearField(6);
+}
+
 /// 麦位管理请求
 class MicRequest extends $pb.GeneratedMessage {
   factory MicRequest({

@@ -13,7 +13,6 @@
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
-import 'package:protobuf/well_known_types/google/protobuf/struct.pb.dart' as $0;
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
@@ -22,7 +21,7 @@ class Response extends $pb.GeneratedMessage {
   factory Response({
     $core.int? code,
     $core.String? message,
-    $0.Struct? data,
+    $core.List<$core.int>? data,
   }) {
     final result = create();
     if (code != null) result.code = code;
@@ -46,8 +45,8 @@ class Response extends $pb.GeneratedMessage {
       createEmptyInstance: create)
     ..aI(1, _omitFieldNames ? '' : 'code')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<$0.Struct>(3, _omitFieldNames ? '' : 'data',
-        subBuilder: $0.Struct.create)
+    ..a<$core.List<$core.int>>(
+        3, _omitFieldNames ? '' : 'data', $pb.PbFieldType.OY)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -87,15 +86,13 @@ class Response extends $pb.GeneratedMessage {
   void clearMessage() => $_clearField(2);
 
   @$pb.TagNumber(3)
-  $0.Struct get data => $_getN(2);
+  $core.List<$core.int> get data => $_getN(2);
   @$pb.TagNumber(3)
-  set data($0.Struct value) => $_setField(3, value);
+  set data($core.List<$core.int> value) => $_setBytes(2, value);
   @$pb.TagNumber(3)
   $core.bool hasData() => $_has(2);
   @$pb.TagNumber(3)
   void clearData() => $_clearField(3);
-  @$pb.TagNumber(3)
-  $0.Struct ensureData() => $_ensure(2);
 }
 
 const $core.bool _omitFieldNames =

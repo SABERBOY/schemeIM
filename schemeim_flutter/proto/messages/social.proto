@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package messages;
+
+import "models/user.proto";
+import "models/social.proto";
+import "models/common.proto";
+
+option go_package = "middle-east-im-server/pkg/pb/messages";
+
+// 添加好友请求
+message AddFriendRequest {
+  string target_id = 1;
+}
+
+// 关注请求
+message FollowRequest {
+  string target_id = 1;
+  string action = 2; // "follow" or "unfollow"
+}

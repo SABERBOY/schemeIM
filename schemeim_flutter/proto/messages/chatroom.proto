@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package messages;
+
+import "models/room.proto";
+import "models/user.proto";
+import "models/common.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "middle-east-im-server/pkg/pb/messages";
+
+// 创建聊天室请求
+message ChatRoomCreateRequest {
+  string chatroom_id = 1;
+  string name = 2;
+  string host_id = 3;
+  string tags = 4;
+  string country_flag = 5;
+  string description = 6;
+  int32 destroy_type = 7;
+  int32 destroy_time = 8;
+  bool is_ban = 9;
+  repeated string white_user_ids = 10;
+  bool need_notify = 11;
+  string extra = 12;
+}
+
+// 麦位管理请求
+message MicRequest {
+  int32 position = 1;
+  string action = 2; // "up", "down", "lock", "unlock"
+}
+
+// 批量用户操作请求（封禁、解封、禁言、取消禁言等）
+message BatchUsersRequest {
+  repeated string user_ids = 1;
+  uint32 minute = 2;
+  bool need_notify = 3;
+  string extra = 4;
+}
+
+// 消息降级请求
+message MessageDemotionRequest {
+  repeated string object_names = 1;
+}
+
+// 白名单消息类型请求
+message WhitelistMessageTypeRequest {
+  repeated string object_names = 1;
+}
+
+// 白名单用户请求
+message WhitelistUsersRequest {
+  repeated string user_ids = 1;
+}
+
+// 聊天室属性请求
+message ChatRoomAttributeRequest {
+  string user_id = 1;
+  string key = 2;
+  string value = 3;
+  int32 auto_delete = 4; // 0 or 1
+}
+
+// 全员禁言请求
+message BanAllUsersRequest {
+  bool need_notify = 1;
+  string extra = 2;
+}
+
+// 禁言白名单用户请求
+message BanWhitelistUsersRequest {
+  repeated string user_ids = 1;
+  bool need_notify = 2;
+  string extra = 3;
+}
+
+// 查询聊天室请求
+message QueryChatRoomsRequest {
+  // 根据需要添加查询参数
+}
+
+// 聊天室列表响应
+message ChatRoomListResponse {
+  repeated models.Room list = 1;
+  int64 total = 2;
+}
+
+// 用户列表响应
+message UserListResponse {
+  repeated models.User list = 1;
+  int64 total = 2;
+}
+
+// 字符串列表响应（用于获取各种列表）
+message StringListResponse {
+  repeated string list = 1;
+}
