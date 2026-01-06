@@ -20,3 +20,9 @@ Run the app with the API key
 ```bash
 flutter run --dart-define=API_KEY=AIzaSyCbVFApghqdrsEEkxejBvTiO7j15_OPqZo
 ```
+
+generate the models
+
+```bash
+dart run build_runner build
+```

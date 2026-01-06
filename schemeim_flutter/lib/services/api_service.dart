@@ -1,15 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:typed_data';
+
 import '../constants.dart';
-import '../protos/messages/auth.pb.dart' as authpb;
-import '../protos/messages/chatroom.pb.dart' as chatroompb;
-import '../protos/messages/user.pb.dart' as usermsgpb;
-import 'package:schemeim_flutter/protos/models/common.pb.dart' as common;
-import 'package:schemeim_flutter/protos/models/room.pb.dart' as roombp;
-import 'package:schemeim_flutter/protos/models/user.pb.dart' as userpb;
-import 'package:schemeim_flutter/protos/models/wallet.pb.dart' as walletpb;
+import '../models/api_response.dart';
+import '../models/chat_contact.dart';
+import '../models/login_response.dart';
+import '../models/message.dart';
+import '../models/paginated_response.dart';
+import '../models/room.dart';
+import '../models/user.dart';
 
 // Shared Preferences Provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -103,6 +103,9 @@ final userApiProvider = Provider<UserApi>(
 final roomApiProvider = Provider<RoomApi>(
   (ref) => RoomApi(ref.read(dioProvider)),
 );
+final chatApiProvider = Provider<ChatApi>(
+  (ref) => ChatApi(ref.read(dioProvider)),
+);
 final economyApiProvider = Provider<EconomyApi>(
   (ref) => EconomyApi(ref.read(dioProvider)),
 );
@@ -114,52 +117,6 @@ abstract class BaseApi {
   BaseApi(this.dio);
 }
 
-/* common.Response _parseCommonResponse(dynamic responseData) {
-  return common.Response()..mergeFromProto3Json(responseData);
-}
-
-Map<String, dynamic> _commonDataAsMap(common.Response resp) {
-  final json = _normalizeProto3JsonNumbers(resp.data.toProto3Json());
-  if (json is Map) return Map<String, dynamic>.from(json);
-  return <String, dynamic>{};
-}
-
-Map<String, dynamic> _updateProfileRequestToSnakeJson(
-  usermsgpb.UpdateProfileRequest req,
-) {
-  final json = <String, dynamic>{};
-  if (req.hasDisplayName()) json['display_name'] = req.displayName;
-  if (req.hasAvatarUrl()) json['avatar_url'] = req.avatarUrl;
-  if (req.hasFrameUrl()) json['frame_url'] = req.frameUrl;
-  if (req.hasRankName()) json['rank_name'] = req.rankName;
-  return json;
-}
-
-Map<String, dynamic> _chatRoomCreateRequestToSnakeJson(
-  chatroompb.ChatRoomCreateRequest req,
-) {
-  final json = <String, dynamic>{};
-  if (req.hasChatroomId()) json['chatroom_id'] = req.chatroomId;
-  if (req.hasName()) json['name'] = req.name;
-  if (req.hasHostId()) json['host_id'] = req.hostId;
-  if (req.hasTags()) json['tags'] = req.tags;
-  if (req.hasCountryFlag()) json['country_flag'] = req.countryFlag;
-  if (req.hasDescription()) json['description'] = req.description;
-  if (req.hasDestroyType()) json['destroy_type'] = req.destroyType;
-  if (req.hasDestroyTime()) json['destroy_time'] = req.destroyTime;
-  if (req.hasIsBan()) json['is_ban'] = req.isBan;
-  if (req.whiteUserIds.isNotEmpty) json['white_user_ids'] = req.whiteUserIds;
-  if (req.hasNeedNotify()) json['need_notify'] = req.needNotify;
-  if (req.hasExtra()) json['extra'] = req.extra;
-  return json;
-}
-
-void _ensureSuccess(common.Response resp) {
-  if (resp.code != 200) {
-    throw resp.message;
-  }
-} */
-
 class AuthApi extends BaseApi {
   AuthApi(super.dio);
 
@@ -168,85 +125,69 @@ class AuthApi extends BaseApi {
       // Real implementation example:
       final response = await dio.post('/auth/send-otp', data: {'phone': phone});
       print('Send OTP Response: ${response.data}');
-      final common.Response commonResponse = common.Response()
-        ..mergeFromProto3Json(response.data);
-      // Uint8List bytes = Uint8List.fromList(commonResponse.data);
-      // final sendOtpResponse = authpb.SendOTPResponse.fromBuffer(bytes);
-      return response.statusCode == 200 && commonResponse.code == 200;
+
+      final apiResponse = ApiResponse<Map<String, dynamic>>.fromJson(
+        response.data,
+        (json) => json as Map<String, dynamic>,
+      );
+
+      return apiResponse.code == 200;
     } on DioException catch (e) {
       throw _handleError(e);
     }
   }
 
-  Future<authpb.LoginResponse> login(String phone, String code) async {
+  Future<LoginResponse> login(String phone, String code) async {
     try {
-      final request = authpb.LoginRequest(phone: phone, code: code);
+      // Real implementation example:
       final response = await dio.post(
         '/auth/login',
-        data: request.toProto3Json(),
+        data: {'phone': phone, 'code': code},
       );
-      final common.Response commonResponse = common.Response()
-        ..mergeFromProto3Json(response.data);
-      Uint8List bytes = Uint8List.fromList(commonResponse.data);
-      final loginResponse = authpb.LoginResponse.fromBuffer(bytes);
-      return loginResponse;
+      print('Login Response: ${response.data}');
+
+      final apiResponse = ApiResponse<LoginResponse>.fromJson(
+        response.data,
+        (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
   }
-}
-
-/// google.protobuf.Struct stores all numeric values as doubles.
-/// When converting back to proto3 JSON, integral values become `1.0` etc,
-/// but protobuf int fields require `int` (or stringified int).
-///
-/// This normalizes any integral doubles (recursively) back to `int`.
-dynamic _normalizeProto3JsonNumbers(dynamic value) {
-  if (value is List) {
-    return value.map(_normalizeProto3JsonNumbers).toList();
-  }
-  if (value is Map) {
-    return value.map((k, v) => MapEntry(k, _normalizeProto3JsonNumbers(v)));
-  }
-  if (value is double) {
-    final asInt = value.toInt();
-    if (value == asInt.toDouble()) return asInt;
-  }
-  return value;
 }
 
 class UserApi extends BaseApi {
   UserApi(super.dio);
 
-  Future<userpb.User> getProfile() async {
+  Future<User> getProfile() async {
     try {
       final response = await dio.get('/user/profile');
-      final common.Response commonResponse = common.Response()
-        ..mergeFromProto3Json(response.data);
-      Uint8List bytes = Uint8List.fromList(commonResponse.data);
-      final user = userpb.User.fromBuffer(bytes);
-      return user;
+      print('Get Profile Response: ${response.data}');
+
+      final apiResponse = ApiResponse<User>.fromJson(
+        response.data,
+        (json) => User.fromJson(json as Map<String, dynamic>),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
   }
 
-  Future<userpb.User> updateProfile(
-    usermsgpb.UpdateProfileRequest updates,
-  ) async {
+  Future<User> updateProfile(User updates) async {
     try {
-      final response = await dio.put(
-        '/user/profile',
-        // Backend expects proto field names (snake_case) for request payloads.
-        data: updates.toProto3Json(),
-        options: Options(contentType: Headers.jsonContentType),
-      );
+      final response = await dio.put('/user/profile', data: updates.toJson());
       print('Update Profile Response: ${response.data}');
-      final common.Response commonResponse = common.Response()
-        ..mergeFromProto3Json(response.data);
-      Uint8List bytes = Uint8List.fromList(commonResponse.data);
-      final updatedUser = userpb.User.fromBuffer(bytes);
-      return updatedUser;
+
+      final apiResponse = ApiResponse<User>.fromJson(
+        response.data,
+        (json) => User.fromJson(json as Map<String, dynamic>),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -256,35 +197,74 @@ class UserApi extends BaseApi {
 class RoomApi extends BaseApi {
   RoomApi(super.dio);
 
-  Future<chatroompb.ChatRoomListResponse> list() async {
+  Future<List<Room>> list() async {
     try {
       final response = await dio.get('/rooms');
-      final common.Response commonResponse = common.Response()
-        ..mergeFromProto3Json(response.data);
-      Uint8List bytes = Uint8List.fromList(commonResponse.data);
-      final rooms = chatroompb.ChatRoomListResponse.fromBuffer(bytes);
-      return rooms;
+      print('List Rooms Response: ${response.data}');
+
+      final apiResponse = ApiResponse<PaginatedResponse<Room>>.fromJson(
+        response.data,
+        (json) => PaginatedResponse<Room>.fromJson(
+          json as Map<String, dynamic>,
+          (itemJson) => Room.fromJson(itemJson as Map<String, dynamic>),
+        ),
+      );
+
+      return apiResponse.data.list;
     } on DioException catch (e) {
       throw _handleError(e);
     }
   }
 
-  Future<chatroompb.ChatRoomCreateResponse> create(
-    chatroompb.ChatRoomCreateRequest req,
-  ) async {
+  Future<ChatRoomCreateResponse> create(ChatRoomCreateRequest room) async {
     try {
-      print('Create Room Request: ${req.toProto3Json()}');
-      final response = await dio.post(
-        '/chatrooms',
-        data: req.toProto3Json(),
-        options: Options(contentType: Headers.jsonContentType),
-      );
+      final response = await dio.post('/chatrooms', data: room.toJson());
       print('Create Room Response: ${response.data}');
-      final common.Response commonResponse = common.Response()
-        ..mergeFromProto3Json(response.data);
-      Uint8List bytes = Uint8List.fromList(commonResponse.data);
-      final createdRoom = chatroompb.ChatRoomCreateResponse.fromBuffer(bytes);
-      return createdRoom;
+
+      final apiResponse = ApiResponse<ChatRoomCreateResponse>.fromJson(
+        response.data,
+        (json) => ChatRoomCreateResponse.fromJson(json as Map<String, dynamic>),
+      );
+
+      return apiResponse.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+}
+
+class ChatApi extends BaseApi {
+  ChatApi(super.dio);
+
+  Future<List<ChatContact>> listContacts() async {
+    try {
+      final response = await dio.get('/chat/contacts');
+      print('List Contacts Response: ${response.data}');
+
+      final apiResponse = ApiResponse<List<ChatContact>>.fromJson(
+        response.data,
+        (json) => (json as List)
+            .map((e) => ChatContact.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+      return apiResponse.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Message> send(Message msg) async {
+    try {
+      final response = await dio.post('/chat/send', data: msg.toJson());
+      print('Send Message Response: ${response.data}');
+
+      final apiResponse = ApiResponse<Message>.fromJson(
+        response.data,
+        (json) => Message.fromJson(json as Map<String, dynamic>),
+      );
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -294,23 +274,26 @@ class RoomApi extends BaseApi {
 class EconomyApi extends BaseApi {
   EconomyApi(super.dio);
 
-  Future<List<walletpb.Gift>> listGifts() async {
+  Future<List<Gift>> listGifts() async {
     try {
       final response = await dio.get('/economy/gifts');
       print('List Gifts Response: ${response.data}');
-      /* final env = _parseCommonResponse(response.data);
-      _ensureSuccess(env);
-      final data = _commonDataAsMap(env);
-      final listJson = data['list'] ?? data['gifts'] ?? data['items'];
-      if (listJson is! List) return <walletpb.Gift>[];
-      return listJson.whereType<Map>().map((e) {
-        final giftJson = _normalizeProto3JsonNumbers(e);
-        return walletpb.Gift()
-          ..mergeFromProto3Json(Map<String, dynamic>.from(giftJson as Map));
-      }).toList(); */
-      return response.data
-          .map((e) => walletpb.Gift()..mergeFromProto3Json(e))
-          .toList();
+
+      final apiResponse = ApiResponse<List<Gift>>.fromJson(response.data, (
+        json,
+      ) {
+        return (json as List).map((e) {
+          final map = e as Map<String, dynamic>;
+          return Gift(
+            id: map['id'] ?? '',
+            name: map['name'] ?? '',
+            icon: map['icon'] ?? '',
+            cost: map['cost'] ?? 0,
+          );
+        }).toList();
+      });
+
+      return apiResponse.data;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -351,5 +334,6 @@ class ApiService {
   static final auth = AuthApi(_dio);
   static final user = UserApi(_dio);
   static final room = RoomApi(_dio);
+  static final chat = ChatApi(_dio);
   static final economy = EconomyApi(_dio);
 }
