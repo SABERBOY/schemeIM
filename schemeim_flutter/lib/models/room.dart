@@ -2,11 +2,12 @@ import 'user.dart';
 import 'package:json_annotation/json_annotation.dart';
 part 'room.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class Room {
   final String id;
   final String title;
   final String? description;
+  @JsonKey(name: 'country_flag')
   final String countryFlag;
   final List<String> tags;
   final User host;

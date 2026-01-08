@@ -12,6 +12,8 @@ void main() {
   late UserApi userApi;
   late RoomApi roomApi;
   String? authToken;
+  const phone = '+8613800138000';
+  const code = '123456';
 
   setUp(() {
     dio = Dio(BaseOptions(baseUrl: API_BASE_URL));
@@ -36,8 +38,6 @@ void main() {
   // login
   Future<LoginResponse> login() async {
     final authApi = AuthApi(dio);
-    const phone = '501234567';
-    const code = '123456';
     final loginRes = await authApi.login(phone, code);
     return loginRes;
   }
@@ -45,15 +45,11 @@ void main() {
   group('API Integration Tests', () {
     // 1. Auth Tests
     test('1. AuthApi: sendOtp returns success', () async {
-      const phone = '501234567';
       final result = await authApi.sendOtp(phone);
       expect(result, isTrue);
     });
 
     test('2. AuthApi: login returns valid token and user', () async {
-      const phone = '501234567';
-      const code = '123456';
-
       await authApi.sendOtp(phone);
       final result = await authApi.login(phone, code);
 

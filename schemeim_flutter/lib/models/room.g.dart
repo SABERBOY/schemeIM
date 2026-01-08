@@ -10,24 +10,24 @@ Room _$RoomFromJson(Map<String, dynamic> json) => Room(
   id: json['id'] as String,
   title: json['title'] as String,
   description: json['description'] as String?,
-  countryFlag: json['countryFlag'] as String,
+  countryFlag: json['country_flag'] as String,
   tags: (json['tags'] as List<dynamic>).map((e) => e as String).toList(),
   host: User.fromJson(json['host'] as Map<String, dynamic>),
   seats: (json['seats'] as List<dynamic>)
       .map((e) => RoomSeat.fromJson(e as Map<String, dynamic>))
       .toList(),
-  onlineCount: (json['onlineCount'] as num).toInt(),
+  onlineCount: (json['online_count'] as num).toInt(),
 );
 
 Map<String, dynamic> _$RoomToJson(Room instance) => <String, dynamic>{
   'id': instance.id,
   'title': instance.title,
   'description': instance.description,
-  'countryFlag': instance.countryFlag,
+  'country_flag': instance.countryFlag,
   'tags': instance.tags,
   'host': instance.host,
   'seats': instance.seats,
-  'onlineCount': instance.onlineCount,
+  'online_count': instance.onlineCount,
 };
 
 RoomSeat _$RoomSeatFromJson(Map<String, dynamic> json) => RoomSeat(
