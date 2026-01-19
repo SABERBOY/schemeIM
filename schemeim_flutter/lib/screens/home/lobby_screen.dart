@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as legacy_provider;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/room.dart';
 import '../../constants.dart';
 import '../../providers/user_provider.dart';
@@ -7,16 +8,18 @@ import '../../services/api_service.dart';
 import 'social_graph_screen.dart';
 import '../room/voice_room_screen.dart';
 
-class LobbyScreen extends StatefulWidget {
+class LobbyScreen extends ConsumerStatefulWidget {
   const LobbyScreen({super.key});
 
   @override
-  State<LobbyScreen> createState() => _LobbyScreenState();
+  ConsumerState<LobbyScreen> createState() => _LobbyScreenState();
 }
 
-class _LobbyScreenState extends State<LobbyScreen> {
+class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   List<Room> _rooms = [];
   bool _showMap = false;
+  bool _isLoading = false;
+  String? _error;
 
   @override
   void initState() {
@@ -25,10 +28,28 @@ class _LobbyScreenState extends State<LobbyScreen> {
   }
 
   Future<void> _fetchRooms() async {
-    final rooms = await ApiService.room.list();
     setState(() {
-      _rooms = rooms;
+      _isLoading = true;
+      _error = null;
     });
+
+    try {
+      final roomApi = ref.read(roomApiProvider);
+      final rooms = await roomApi.list();
+      if (mounted) {
+        setState(() {
+          _rooms = rooms;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _joinRoom(Room room) {
@@ -38,25 +59,47 @@ class _LobbyScreenState extends State<LobbyScreen> {
     );
   }
 
-  void _createRoom(String title, String country) {
-    final user = Provider.of<UserProvider>(context, listen: false).currentUser;
-    final newRoom = Room(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: title,
-      countryFlag: country,
-      host: user,
-      seats: [],
-      onlineCount: 1,
-      tags: ['New', 'Chat'],
-    );
-    setState(() {
-      _rooms.insert(0, newRoom);
-    });
+  Future<void> _createRoom(String title, String country) async {
+    final user = ref.read(userProvider);
+    if (user == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final roomApi = ref.read(roomApiProvider);
+      final newRoomRequest = ChatRoomCreateRequest(
+        chatroom_id: 'room_${DateTime.now().millisecondsSinceEpoch}',
+        name: title,
+        host_id: user.id,
+        country_flag: country,
+        destroy_type: 0,
+        destroy_time: 0,
+        is_ban: false,
+        white_user_ids: [],
+        need_notify: false,
+        extra: '',
+        tags: 'New, Chat',
+        description: 'Created via app',
+      );
+
+      final response = await roomApi.create(newRoomRequest);
+      print('Room created: ${response.chatroom_id} - ${response.message}');
+
+      // Refresh room list after creation
+      await _fetchRooms();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Failed to create room: $e';
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<UserProvider>(context);
+    final provider = legacy_provider.Provider.of<UserProvider>(context);
 
     if (_showMap) {
       return SocialGraphScreen(onClose: () => setState(() => _showMap = false));
@@ -67,7 +110,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
       appBar: AppBar(
         title: Text(
           provider.t('activeRooms'),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -99,20 +145,67 @@ class _LobbyScreenState extends State<LobbyScreen> {
           ),
         ],
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(15),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 1.4,
-          crossAxisSpacing: 15,
-          mainAxisSpacing: 15,
-        ),
-        itemCount: _rooms.length,
-        itemBuilder: (context, index) {
-          final room = _rooms[index];
-          return _RoomCard(room: room, onTap: () => _joinRoom(room));
-        },
+      body: RefreshIndicator(
+        onRefresh: _fetchRooms,
+        color: AppTheme.primary,
+        child: _buildBody(provider),
       ),
+    );
+  }
+
+  Widget _buildBody(UserProvider provider) {
+    if (_isLoading && _rooms.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.primary),
+      );
+    }
+
+    if (_error != null && _rooms.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SelectableText.rich(
+              TextSpan(
+                text: 'Error: ',
+                style: const TextStyle(
+                  color: AppTheme.error,
+                  fontWeight: FontWeight.bold,
+                ),
+                children: [
+                  TextSpan(
+                    text: _error,
+                    style: const TextStyle(fontWeight: FontWeight.normal),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchRooms,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(15),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.4,
+        crossAxisSpacing: 15,
+        mainAxisSpacing: 15,
+      ),
+      itemCount: _rooms.length,
+      itemBuilder: (context, index) {
+        final room = _rooms[index];
+        return _RoomCard(room: room, onTap: () => _joinRoom(room));
+      },
     );
   }
 
@@ -239,8 +332,9 @@ class _RoomCard extends StatelessWidget {
                   ),
                   Positioned(
                     top: 8,
-                    left: 8, // LTR/RTL handled by directionality if wrapped, but here hardcoded. 
-                             // Ideally use directional positioned or context direction check.
+                    left:
+                        8, // LTR/RTL handled by directionality if wrapped, but here hardcoded.
+                    // Ideally use directional positioned or context direction check.
                     child: Text(
                       room.countryFlag,
                       style: const TextStyle(fontSize: 20),
@@ -308,7 +402,7 @@ class _RoomCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                room.tags.first,
+                                room.tags,
                                 style: const TextStyle(
                                   color: Colors.grey,
                                   fontSize: 8,

@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
-import '../services/api_service.dart';
 import '../constants.dart';
 
+// UserProvider now only handles UI-related state (language, theme)
+// User data is managed by Riverpod userProvider in api_service.dart
 class UserProvider with ChangeNotifier {
   bool _isLoggedIn = false;
   String _language = 'en';
 
   User _currentUser = User(
     id: 'user_123',
-    displayName: 'Habibi King',
+    displayName: 'Guest',
     avatarUrl: 'https://cdn-icons-png.flaticon.com/512/147/147142.png',
-    frameUrl: AVATAR_FRAMES[1].image,
-    goldBalance: 500,
-    level: 5,
-    isVerified: true,
+    frameUrl: '',
+    goldBalance: 0,
+    level: 1,
+    isVerified: false,
     privacy: UserPrivacy(showSocialList: true, showOnlineStatus: true),
-    rank: UserRank(rankName: 'Noble', colorHex: '#CD7F32'),
+    rank: UserRank(rankName: 'Citizen', colorHex: '#FFFFFF'),
   );
 
   bool get isLoggedIn => _isLoggedIn;
@@ -28,22 +29,9 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> authenticate(String phone, String code) async {
-    final loginResponse = await ApiService.auth.login(phone, code);
-    final user = loginResponse.user;
-    final token = loginResponse.token;
-    _currentUser = user;
-    // Authentication successful, but not yet logged in (waiting for IM)
-  }
-
   void completeLogin() {
     _isLoggedIn = true;
     notifyListeners();
-  }
-
-  Future<void> login(String phone, String code) async {
-    await authenticate(phone, code);
-    completeLogin();
   }
 
   void logout() {

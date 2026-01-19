@@ -12,10 +12,10 @@ import 'services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Shared Preferences
   final prefs = await SharedPreferences.getInstance();
-  
+
   runApp(
     ProviderScope(
       overrides: [
@@ -34,22 +34,84 @@ void main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Watch token provider to determine auth state
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  bool _isInitializing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAutoLogin();
+  }
+
+  Future<void> _initializeAutoLogin() async {
+    // Check if we have a valid token
+    final token = ref.read(tokenProvider);
+    if (token != null && token.isNotEmpty) {
+      // Try to load user from storage first
+      final storedUser = ref.read(userProvider);
+
+      // If no stored user, fetch from API
+      if (storedUser == null) {
+        try {
+          final userApi = ref.read(userApiProvider);
+          final user = await userApi.getProfile();
+          await ref.read(userProvider.notifier).setUser(user);
+          print('Auto-login successful: Fetched user from API');
+        } catch (e) {
+          print('Failed to fetch user profile on auto-login: $e');
+          // Clear invalid token
+          await ref.read(tokenProvider.notifier).setToken(null);
+        }
+      } else {
+        print('Auto-login successful: Loaded user from storage');
+      }
+    }
+
+    if (mounted) {
+      setState(() => _isInitializing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Watch token and user providers to determine auth state
     final token = ref.watch(tokenProvider);
-    final isLoggedIn = token != null && token.isNotEmpty;
+    final user = ref.watch(userProvider);
+    final isLoggedIn = token != null && token.isNotEmpty && user != null;
+
+    // Show loading screen during initialization
+    if (_isInitializing) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          backgroundColor: AppTheme.bg,
+          body: Center(
+            child: CircularProgressIndicator(color: AppTheme.primary),
+          ),
+        ),
+      );
+    }
 
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => UserProvider())],
       child: Consumer<UserProvider>(
         builder: (context, provider, child) {
-          // Sync Riverpod state with legacy UserProvider if needed
-          // For now, we rely on the logic that when token is set, UserProvider is also updated in LoginScreen
-          
+          // Sync Riverpod user state with legacy UserProvider if logged in
+          if (isLoggedIn) {
+            // user is guaranteed to be non-null here because isLoggedIn checks it
+            provider.updateUser(user);
+            if (!provider.isLoggedIn) {
+              provider.completeLogin();
+            }
+          }
+
           return MaterialApp(
             title: 'SchemeIM',
             debugShowCheckedModeBanner: false,
@@ -71,9 +133,7 @@ class MyApp extends ConsumerWidget {
               ),
               fontFamily: provider.language == 'ar' ? 'Cairo' : 'Roboto',
             ),
-            home: isLoggedIn
-                ? const MainScreen()
-                : const LoginScreen(),
+            home: isLoggedIn ? const MainScreen() : const LoginScreen(),
           );
         },
       ),

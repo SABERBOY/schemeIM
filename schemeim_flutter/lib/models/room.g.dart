@@ -11,24 +11,39 @@ Room _$RoomFromJson(Map<String, dynamic> json) => Room(
   title: json['title'] as String,
   description: json['description'] as String?,
   countryFlag: json['country_flag'] as String,
-  tags: (json['tags'] as List<dynamic>).map((e) => e as String).toList(),
+  tags: json['tags'] as String,
   host: User.fromJson(json['host'] as Map<String, dynamic>),
-  seats: (json['seats'] as List<dynamic>)
-      .map((e) => RoomSeat.fromJson(e as Map<String, dynamic>))
-      .toList(),
   onlineCount: (json['online_count'] as num).toInt(),
+  hostID: json['host_id'] as String,
 );
 
 Map<String, dynamic> _$RoomToJson(Room instance) => <String, dynamic>{
   'id': instance.id,
   'title': instance.title,
-  'description': instance.description,
   'country_flag': instance.countryFlag,
   'tags': instance.tags,
+  'host_id': instance.hostID,
   'host': instance.host,
-  'seats': instance.seats,
+  'description': instance.description,
   'online_count': instance.onlineCount,
 };
+
+ListChatRoom _$ListChatRoomFromJson(Map<String, dynamic> json) => ListChatRoom(
+  list: (json['list'] as List<dynamic>)
+      .map((e) => Room.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  total: (json['total'] as num).toInt(),
+  page: (json['page'] as num).toInt(),
+  size: (json['size'] as num).toInt(),
+);
+
+Map<String, dynamic> _$ListChatRoomToJson(ListChatRoom instance) =>
+    <String, dynamic>{
+      'list': instance.list,
+      'total': instance.total,
+      'page': instance.page,
+      'size': instance.size,
+    };
 
 RoomSeat _$RoomSeatFromJson(Map<String, dynamic> json) => RoomSeat(
   index: (json['index'] as num).toInt(),

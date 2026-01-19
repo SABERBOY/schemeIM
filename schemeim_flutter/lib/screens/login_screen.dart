@@ -22,6 +22,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   int _timer = 0;
   String _countryCode = '+971';
   Timer? _timerInstance;
+  String? _error;
 
   @override
   void dispose() {
@@ -45,11 +46,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleSendOtp() async {
     if (_phoneController.text.length < 5) return;
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
 
     try {
       final authApi = ref.read(authApiProvider);
-      await authApi.sendOtp(_phoneController.text);
+      await authApi.sendOtp('$_countryCode${_phoneController.text}');
 
       if (mounted) {
         setState(() {
@@ -61,31 +65,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       print("Send OTP failed: $e");
       if (mounted) {
-        setState(() => _loading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to send OTP: $e')));
+        setState(() {
+          _loading = false;
+          _error = 'Failed to send OTP: $e';
+        });
       }
     }
   }
 
   Future<void> _handleVerify() async {
     if (_otpController.text.length != 6) return;
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
 
     try {
       final authApi = ref.read(authApiProvider);
       final loginResponse = await authApi.login(
-        _phoneController.text,
+        '$_countryCode${_phoneController.text}',
         _otpController.text,
       );
       final user = loginResponse.user;
       final token = loginResponse.token;
 
       // 1. Update Riverpod Token
-      ref.read(tokenProvider.notifier).setToken(token);
+      await ref.read(tokenProvider.notifier).setToken(token);
 
-      // 2. Update Legacy UserProvider
+      // 2. Update Riverpod User (persists to storage)
+      await ref.read(userProvider.notifier).setUser(user);
+
+      // 3. Update Legacy UserProvider
       if (mounted) {
         final legacyUserProvider = legacy_provider.Provider.of<UserProvider>(
           context,
@@ -99,10 +109,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       print("Login failed: $e");
       if (mounted) {
-        setState(() => _loading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
+        setState(() {
+          _loading = false;
+          _error = 'Login failed: $e';
+        });
       }
     }
   }
@@ -250,6 +260,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 40),
 
+                      if (_error != null)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppTheme.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppTheme.error),
+                          ),
+                          child: SelectableText.rich(
+                            TextSpan(
+                              text: 'Error: ',
+                              style: const TextStyle(
+                                color: AppTheme.error,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: _error,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
                       if (_step == 1)
                         _buildPhoneStep(userProvider)
                       else
@@ -293,7 +331,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Icons.arrow_drop_down,
                       color: Colors.white70,
                     ),
-                    items: ['+971', '+966', '+20', '+1']
+                    items: ['+971', '+966', '+20', '+1', "+86"]
                         .map(
                           (code) =>
                               DropdownMenuItem(value: code, child: Text(code)),

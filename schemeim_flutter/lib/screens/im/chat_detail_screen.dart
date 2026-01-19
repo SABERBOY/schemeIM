@@ -20,7 +20,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void initState() {
     super.initState();
     _messages = [
-      {'id': '1', 'text': widget.contact.lastMessage, 'sender': 'them'}
+      {'id': '1', 'text': widget.contact.lastMessage, 'sender': 'them'},
     ];
   }
 
@@ -29,7 +29,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (text.isEmpty) return;
 
     setState(() {
-      _messages.add({'id': DateTime.now().toString(), 'text': text, 'sender': 'me'});
+      _messages.add({
+        'id': DateTime.now().toString(),
+        'text': text,
+        'sender': 'me',
+      });
       _controller.clear();
     });
     _scrollToBottom();
@@ -41,7 +45,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           _messages.add({
             'id': DateTime.now().toString(),
             'text': "That sounds great! Habibi!",
-            'sender': 'them'
+            'sender': 'them',
           });
         });
         _scrollToBottom();
@@ -67,29 +71,44 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       backgroundColor: AppTheme.bg,
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Row(
           children: [
             SizedBox(
-              width: 32, height: 32,
+              width: 32,
+              height: 32,
               child: Stack(
                 children: [
                   Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Color(int.parse(widget.contact.avatar.replaceFirst('#', '0xFF'))),
+                      color: Color(
+                        int.parse(
+                          widget.contact.avatar.replaceFirst('#', '0xFF'),
+                        ),
+                      ),
                     ),
                   ),
-                  if (widget.contact.frame != null && widget.contact.frame!.isNotEmpty)
+                  if (widget.contact.frame != null &&
+                      widget.contact.frame!.isNotEmpty)
                     Positioned(
-                      top: -4, left: -4, right: -4, bottom: -4,
+                      top: -4,
+                      left: -4,
+                      right: -4,
+                      bottom: -4,
                       child: SvgPicture.string(widget.contact.frame!),
                     ),
                 ],
               ),
             ),
             const SizedBox(width: 10),
-            Text(widget.contact.name, style: const TextStyle(color: Colors.white, fontSize: 16)),
+            Text(
+              widget.contact.name,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
           ],
         ),
       ),
@@ -104,16 +123,26 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 final msg = _messages[index];
                 final isMe = msg['sender'] == 'me';
                 return Align(
-                  alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isMe
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.7,
+                    ),
                     decoration: BoxDecoration(
                       color: isMe ? AppTheme.primary : AppTheme.surface,
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    child: Text(msg['text'], style: const TextStyle(color: Colors.white)),
+                    child: Text(
+                      msg['text'],
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
                 );
               },
@@ -133,8 +162,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       hintStyle: const TextStyle(color: Colors.grey),
                       filled: true,
                       fillColor: const Color(0xFF333333),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                     ),
                     onSubmitted: (_) => _sendMessage(),
                   ),
@@ -155,4 +190,3 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 }
-

@@ -43,12 +43,13 @@ void main() {
   }
 
   group('API Integration Tests', () {
-    // 1. Auth Tests
+    //1. sendOtp returns success
     test('1. AuthApi: sendOtp returns success', () async {
       final result = await authApi.sendOtp(phone);
       expect(result, isTrue);
     });
 
+    //2.login returns valid token and user
     test('2. AuthApi: login returns valid token and user', () async {
       await authApi.sendOtp(phone);
       final result = await authApi.login(phone, code);
@@ -62,7 +63,7 @@ void main() {
       print('Logged in successfully. Token stored.');
     });
 
-    // 2. User Tests (Dependent on Login)
+    //3. getProfile returns current user
     test('3. UserApi: getProfile returns current user', () async {
       if (authToken == null) {
         final loginRes = await login();
@@ -77,6 +78,7 @@ void main() {
       print('User Profile: ${user.displayName} (Level ${user.level})');
     });
 
+    //4. updateProfile updates user data
     test('4. UserApi: updateProfile updates user data', () async {
       if (authToken == null) {
         final loginRes = await login();
@@ -95,7 +97,7 @@ void main() {
       print('User Profile Updated: ${updatedUser.displayName}');
     });
 
-    // 3. Room Tests (Dependent on Login)
+    //5. list returns list of rooms
     test('5. RoomApi: list returns list of rooms', () async {
       if (authToken == null) {
         // Fallback login if running independently (though tests usually run in order in a group)
@@ -110,6 +112,7 @@ void main() {
       print('Fetched ${rooms.length} rooms');
     });
 
+    //6. create creates a new room
     test('6. RoomApi: create creates a new room', () async {
       if (authToken == null) {
         // Fallback login if running independently (though tests usually run in order in a group)
@@ -138,7 +141,7 @@ void main() {
 
       final createdRoom = await roomApi.create(newRoom);
 
-      expect(createdRoom, isA<ChatRoomCreateRequest>());
+      expect(createdRoom, isA<ChatRoomCreateResponse>());
       expect(createdRoom.chatroom_id, isNotEmpty);
       print(
         'Created Room: ${createdRoom.chatroom_id} (ID: ${createdRoom.chatroom_id}) ${createdRoom.message}',

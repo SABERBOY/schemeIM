@@ -21,8 +21,8 @@ class ChatContact {
     this.isAi,
   });
 
-  factory ChatContact.fromJson(Map<String, dynamic> json) => _$ChatContactFromJson(json);
+  factory ChatContact.fromJson(Map<String, dynamic> json) =>
+      _$ChatContactFromJson(json);
 
   Map<String, dynamic> toJson() => _$ChatContactToJson(this);
 }
-

@@ -24,10 +24,19 @@ class _GameCenterScreenState extends State<GameCenterScreen> {
               if (_activeGame == null)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 20),
-                  child: Text("Game Center", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    "Game Center",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               Expanded(
-                child: _activeGame != null ? _buildGameView() : _buildGameList(),
+                child: _activeGame != null
+                    ? _buildGameView()
+                    : _buildGameList(),
               ),
             ],
           ),
@@ -58,7 +67,8 @@ class _GameCenterScreenState extends State<GameCenterScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 60, height: 60,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
                     color: game.color,
                     borderRadius: BorderRadius.circular(15),
@@ -67,9 +77,18 @@ class _GameCenterScreenState extends State<GameCenterScreen> {
                   child: Text(game.icon, style: const TextStyle(fontSize: 30)),
                 ),
                 const SizedBox(height: 10),
-                Text(game.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                Text(
+                  game.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 5),
-                const Text("Play Now", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                const Text(
+                  "Play Now",
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -88,7 +107,14 @@ class _GameCenterScreenState extends State<GameCenterScreen> {
               onPressed: () => setState(() => _activeGame = null),
             ),
             const SizedBox(width: 10),
-            Text(_activeGame!.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(
+              _activeGame!.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 10),
@@ -102,11 +128,31 @@ class _GameCenterScreenState extends State<GameCenterScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(_activeGame!.icon, style: const TextStyle(fontSize: 80, decoration: TextDecoration.none)),
+                Text(
+                  _activeGame!.icon,
+                  style: const TextStyle(
+                    fontSize: 80,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
                 const SizedBox(height: 20),
-                Text("Loading ${_activeGame!.name}...", style: const TextStyle(color: Colors.black, fontSize: 18, decoration: TextDecoration.none)),
+                Text(
+                  "Loading ${_activeGame!.name}...",
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
                 const SizedBox(height: 10),
-                const Text("Simulating HTML5 Game Webview", style: TextStyle(color: Colors.grey, fontSize: 14, decoration: TextDecoration.none)),
+                const Text(
+                  "Simulating HTML5 Game Webview",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
               ],
             ),
           ),
@@ -115,4 +161,3 @@ class _GameCenterScreenState extends State<GameCenterScreen> {
     );
   }
 }
-

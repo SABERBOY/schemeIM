@@ -27,24 +27,41 @@ class MessagesScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF2A2A3A),
                   borderRadius: BorderRadius.circular(8),
-                  border: const Border(left: BorderSide(color: Color(0xFF2196F3), width: 4)),
+                  border: const Border(
+                    left: BorderSide(color: Color(0xFF2196F3), width: 4),
+                  ),
                 ),
                 child: const Row(
                   children: [
                     CircleAvatar(backgroundColor: Color(0xFF2196F3), radius: 4),
                     SizedBox(width: 10),
-                    Text("RongCloud IM Connected", style: TextStyle(color: Colors.grey, fontSize: 14)),
+                    Text(
+                      "RongCloud IM Connected",
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-              const Text("Messages", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+              const Text(
+                "Messages",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 15),
 
               // AI Chat Row
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => AIChatScreen(currentUser: user)));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AIChatScreen(currentUser: user),
+                    ),
+                  );
                 },
                 child: Container(
                   padding: const EdgeInsets.all(15),
@@ -55,25 +72,49 @@ class MessagesScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       Container(
-                        width: 50, height: 50,
+                        width: 50,
+                        height: 50,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: LinearGradient(colors: [Color(0xFF6200EA), Color(0xFFB388FF)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF6200EA), Color(0xFFB388FF)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
-                        child: const Icon(Icons.smart_toy, color: Colors.white, size: 28),
+                        child: const Icon(
+                          Icons.smart_toy,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                       const SizedBox(width: 15),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("AI Assistant", style: TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold)),
+                            Text(
+                              "AI Assistant",
+                              style: TextStyle(
+                                color: AppTheme.secondary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             SizedBox(height: 4),
-                            Text("Ask me anything...", style: TextStyle(color: Colors.grey, fontSize: 14)),
+                            Text(
+                              "Ask me anything...",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      const Text("Now", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      const Text(
+                        "Now",
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
@@ -89,36 +130,70 @@ class MessagesScreen extends StatelessWidget {
                   ),
                   child: ListView.separated(
                     itemCount: MOCK_CHATS.length,
-                    separatorBuilder: (_, __) => const Divider(color: Color(0xFF333333), height: 1),
+                    separatorBuilder: (_, __) =>
+                        const Divider(color: Color(0xFF333333), height: 1),
                     itemBuilder: (context, index) {
                       final chat = MOCK_CHATS[index];
                       return ListTile(
                         onTap: () {
-                           Navigator.push(context, MaterialPageRoute(builder: (_) => ChatDetailScreen(contact: chat)));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatDetailScreen(contact: chat),
+                            ),
+                          );
                         },
                         contentPadding: const EdgeInsets.all(15),
                         tileColor: AppTheme.surface,
                         leading: SizedBox(
-                          width: 50, height: 50,
+                          width: 50,
+                          height: 50,
                           child: Stack(
                             children: [
                               Container(
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Color(int.parse(chat.avatar.replaceFirst('#', '0xFF'))),
+                                  color: Color(
+                                    int.parse(
+                                      chat.avatar.replaceFirst('#', '0xFF'),
+                                    ),
+                                  ),
                                 ),
                               ),
                               if (chat.frame != null && chat.frame!.isNotEmpty)
                                 Positioned(
-                                  top: -5, left: -5, right: -5, bottom: -5,
-                                  child: SvgPicture.string(chat.frame!, fit: BoxFit.fill),
+                                  top: -5,
+                                  left: -5,
+                                  right: -5,
+                                  bottom: -5,
+                                  child: SvgPicture.string(
+                                    chat.frame!,
+                                    fit: BoxFit.fill,
+                                  ),
                                 ),
                             ],
                           ),
                         ),
-                        title: Text(chat.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        subtitle: Text(chat.lastMessage, style: const TextStyle(color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
-                        trailing: Text(chat.time, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        title: Text(
+                          chat.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          chat.lastMessage,
+                          style: const TextStyle(color: Colors.grey),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Text(
+                          chat.time,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -131,4 +206,3 @@ class MessagesScreen extends StatelessWidget {
     );
   }
 }
-

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,6 +42,46 @@ class TokenNotifier extends Notifier<String?> {
 final tokenProvider = NotifierProvider<TokenNotifier, String?>(
   TokenNotifier.new,
 );
+
+// User Provider using Notifier (persists user data)
+class UserNotifier extends Notifier<User?> {
+  static const _userKey = 'user_data';
+
+  @override
+  User? build() {
+    // Load initial user from storage
+    final prefs = ref.watch(sharedPreferencesProvider);
+    final userJson = prefs.getString(_userKey);
+    if (userJson != null && userJson.isNotEmpty) {
+      try {
+        final Map<String, dynamic> jsonMap =
+            jsonDecode(userJson) as Map<String, dynamic>;
+        return User.fromJson(jsonMap);
+      } catch (e) {
+        print('Error loading user from storage: $e');
+        return null;
+      }
+    }
+    return null;
+  }
+
+  Future<void> setUser(User? user) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (user != null) {
+      final userJson = jsonEncode(user.toJson());
+      await prefs.setString(_userKey, userJson);
+    } else {
+      await prefs.remove(_userKey);
+    }
+    state = user;
+  }
+
+  Future<void> updateUser(User user) async {
+    await setUser(user);
+  }
+}
+
+final userProvider = NotifierProvider<UserNotifier, User?>(UserNotifier.new);
 
 // Dio Provider Configuration
 final dioProvider = Provider<Dio>((ref) {
@@ -200,7 +241,7 @@ class RoomApi extends BaseApi {
   Future<List<Room>> list() async {
     try {
       final response = await dio.get('/rooms');
-      print('List Rooms Response: ${response.data}');
+      print('List Rooms Response: ${response.data.toString()}');
 
       final apiResponse = ApiResponse<PaginatedResponse<Room>>.fromJson(
         response.data,
@@ -316,24 +357,4 @@ String _handleError(DioException e) {
     return 'No internet connection.';
   }
   return 'Connection error: ${e.message}';
-}
-
-// Backward Compatibility Class (Optional, but helps migration)
-// TODO: Remove this after full migration to Riverpod providers
-class ApiService {
-  static final _dio = Dio(
-    BaseOptions(
-      baseUrl: API_BASE_URL,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ),
-  );
-
-  static final auth = AuthApi(_dio);
-  static final user = UserApi(_dio);
-  static final room = RoomApi(_dio);
-  static final chat = ChatApi(_dio);
-  static final economy = EconomyApi(_dio);
 }

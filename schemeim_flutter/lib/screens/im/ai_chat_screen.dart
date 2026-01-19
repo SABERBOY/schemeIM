@@ -23,7 +23,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
   @override
   void initState() {
     super.initState();
-    _messages.add({'role': 'model', 'text': 'Salam ${widget.currentUser.displayName}! I am your AI Assistant. How can I help you today?'});
+    _messages.add({
+      'role': 'model',
+      'text':
+          'Salam ${widget.currentUser.displayName}! I am your AI Assistant. How can I help you today?',
+    });
   }
 
   Future<void> _sendMessage() async {
@@ -48,12 +52,12 @@ class _AIChatScreenState extends State<AIChatScreen> {
       final response = await chat.sendMessage(Content.text(text));
 
       setState(() {
-        // Sync history manually if startChat doesn't persist across rebuilds in this logic 
+        // Sync history manually if startChat doesn't persist across rebuilds in this logic
         // (startChat returns a session, we should probably keep session in state, but simpler here)
         // Actually, startChat(history: _history) creates a NEW session with PAST history.
         // We need to update _history.
         _history.add(Content.text(text));
-        
+
         if (response.text != null) {
           _history.add(Content.model([TextPart(response.text!)]));
           _messages.add({'role': 'model', 'text': response.text!});
@@ -87,19 +91,30 @@ class _AIChatScreenState extends State<AIChatScreen> {
       backgroundColor: AppTheme.bg,
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
-        leading: IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Row(
           children: [
             Container(
-              width: 32, height: 32,
+              width: 32,
+              height: 32,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFF5722)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: LinearGradient(
+                  colors: [Color(0xFFFFD700), Color(0xFFFF5722)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
               child: const Icon(Icons.smart_toy, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 10),
-            const Text("AI Assistant", style: TextStyle(color: Colors.white, fontSize: 16)),
+            const Text(
+              "AI Assistant",
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
           ],
         ),
       ),
@@ -114,22 +129,38 @@ class _AIChatScreenState extends State<AIChatScreen> {
                 if (index == _messages.length) {
                   return const Padding(
                     padding: EdgeInsets.only(left: 10, bottom: 10),
-                    child: Text("AI is typing...", style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+                    child: Text(
+                      "AI is typing...",
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
                   );
                 }
                 final msg = _messages[index];
                 final isUser = msg['role'] == 'user';
                 return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isUser
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.8,
+                    ),
                     decoration: BoxDecoration(
                       color: isUser ? AppTheme.primary : AppTheme.surface,
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    child: Text(msg['text']!, style: const TextStyle(color: Colors.white)),
+                    child: Text(
+                      msg['text']!,
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
                 );
               },
@@ -149,8 +180,14 @@ class _AIChatScreenState extends State<AIChatScreen> {
                       hintStyle: const TextStyle(color: Colors.grey),
                       filled: true,
                       fillColor: const Color(0xFF333333),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                     ),
                     onSubmitted: (_) => _sendMessage(),
                   ),
@@ -171,4 +208,3 @@ class _AIChatScreenState extends State<AIChatScreen> {
     );
   }
 }
-

@@ -6,28 +6,52 @@ part 'room.g.dart';
 class Room {
   final String id;
   final String title;
-  final String? description;
   @JsonKey(name: 'country_flag')
   final String countryFlag;
-  final List<String> tags;
+  final String tags;
+  @JsonKey(name: 'host_id')
+  final String hostID;
   final User host;
-  final List<RoomSeat> seats;
+  final String? description;
+  @JsonKey(name: 'online_count')
   final int onlineCount;
+  // final List<RoomSeat> seats;
 
   Room({
     required this.id,
     required this.title,
-    this.description,
+    required this.description,
     required this.countryFlag,
     required this.tags,
     required this.host,
-    required this.seats,
+    // required this.seats,
     required this.onlineCount,
+    required this.hostID,
   });
 
   factory Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
 
   Map<String, dynamic> toJson() => _$RoomToJson(this);
+}
+
+// ListChatRoom
+@JsonSerializable()
+class ListChatRoom {
+  final List<Room> list;
+  final int total;
+  final int page;
+  final int size;
+
+  ListChatRoom({
+    required this.list,
+    required this.total,
+    required this.page,
+    required this.size,
+  });
+  factory ListChatRoom.fromJson(Map<String, dynamic> json) =>
+      _$ListChatRoomFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ListChatRoomToJson(this);
 }
 
 @JsonSerializable()

@@ -2,11 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 part 'message.g.dart';
 
 // @JsonSerializable()
-enum MessageType {
-  text,
-  gift,
-  system,
-}
+enum MessageType { text, gift, system }
 
 @JsonSerializable()
 class Message {
@@ -56,7 +52,8 @@ class Message {
     );
   }
 
-  factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
+  factory Message.fromJson(Map<String, dynamic> json) =>
+      _$MessageFromJson(json);
 
   Map<String, dynamic> toJson() => _$MessageToJson(this);
 }

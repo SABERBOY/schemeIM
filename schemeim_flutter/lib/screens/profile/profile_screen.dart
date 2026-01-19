@@ -51,11 +51,120 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final newAvatar = "https://api.dicebear.com/7.x/avataaars/png?seed=$random";
     final updatedUser = user.copyWith(avatarUrl: newAvatar);
 
-    // Update Legacy Provider
-    provider.updateUser(updatedUser);
+    try {
+      // Call API to update profile
+      final userApi = ref.read(userApiProvider);
+      final savedUser = await userApi.updateProfile(updatedUser);
 
-    // Call API (Example)
-    // await ref.read(userApiProvider).updateProfile(updatedUser);
+      // Update Riverpod state
+      await ref.read(userProvider.notifier).updateUser(savedUser);
+
+      // Update Legacy Provider
+      provider.updateUser(savedUser);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Avatar updated successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update avatar: $e')));
+      }
+    }
+  }
+
+  Future<void> _updateDisplayName(
+    UserProvider provider,
+    User user,
+    String newName,
+  ) async {
+    if (newName.isEmpty || newName == user.displayName) {
+      setState(() => _isEditing = false);
+      return;
+    }
+
+    try {
+      final updatedUser = user.copyWith(displayName: newName);
+
+      // Call API to update profile
+      final userApi = ref.read(userApiProvider);
+      final savedUser = await userApi.updateProfile(updatedUser);
+
+      // Update Riverpod state
+      await ref.read(userProvider.notifier).updateUser(savedUser);
+
+      // Update Legacy Provider
+      provider.updateUser(savedUser);
+
+      setState(() => _isEditing = false);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Name updated successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update name: $e')));
+      }
+    }
+  }
+
+  Future<void> _updatePrivacy(
+    UserProvider provider,
+    User user,
+    UserPrivacy newPrivacy,
+  ) async {
+    try {
+      final updatedUser = user.copyWith(privacy: newPrivacy);
+
+      // Call API to update profile
+      final userApi = ref.read(userApiProvider);
+      final savedUser = await userApi.updateProfile(updatedUser);
+
+      // Update Riverpod state
+      await ref.read(userProvider.notifier).updateUser(savedUser);
+
+      // Update Legacy Provider
+      provider.updateUser(savedUser);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update privacy: $e')));
+      }
+    }
+  }
+
+  Future<void> _updateFrame(
+    UserProvider provider,
+    User user,
+    String frameUrl,
+  ) async {
+    try {
+      final updatedUser = user.copyWith(frameUrl: frameUrl);
+
+      // Call API to update profile
+      final userApi = ref.read(userApiProvider);
+      final savedUser = await userApi.updateProfile(updatedUser);
+
+      // Update Riverpod state
+      await ref.read(userProvider.notifier).updateUser(savedUser);
+
+      // Update Legacy Provider
+      provider.updateUser(savedUser);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update frame: $e')));
+      }
+    }
   }
 
   @override
@@ -90,8 +199,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     backgroundColor: AppTheme.danger,
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: () {
-                    ref.read(tokenProvider.notifier).setToken(null);
+                  onPressed: () async {
+                    // Clear all persisted state
+                    await ref.read(tokenProvider.notifier).setToken(null);
+                    await ref.read(userProvider.notifier).setUser(null);
                     provider.logout();
                   },
                   child: Text(provider.t('logout')),
@@ -172,12 +283,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               IconButton(
                 icon: const Icon(Icons.check, color: AppTheme.success),
-                onPressed: () {
-                  provider.updateUser(
-                    user.copyWith(displayName: _nameController.text),
-                  );
-                  setState(() => _isEditing = false);
-                },
+                onPressed: () =>
+                    _updateDisplayName(provider, user, _nameController.text),
               ),
             ],
           )
@@ -287,9 +394,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 final isSelected = user.frameUrl == frame.image;
 
                 return GestureDetector(
-                  onTap: () {
-                    provider.updateUser(user.copyWith(frameUrl: frame.image));
-                  },
+                  onTap: () => _updateFrame(provider, user, frame.image),
                   child: Container(
                     width: 80,
                     margin: const EdgeInsets.only(right: 10),
@@ -364,15 +469,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Switch(
                 value: user.privacy?.showSocialList ?? false,
                 onChanged: (val) {
-                  provider.updateUser(
-                    user.copyWith(
-                      privacy: UserPrivacy(
-                        showSocialList: val,
-                        showOnlineStatus:
-                            user.privacy?.showOnlineStatus ?? false,
-                      ),
-                    ),
+                  final newPrivacy = UserPrivacy(
+                    showSocialList: val,
+                    showOnlineStatus: user.privacy?.showOnlineStatus ?? false,
                   );
+                  _updatePrivacy(provider, user, newPrivacy);
                 },
                 activeThumbColor: AppTheme.success,
               ),
