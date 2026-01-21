@@ -29,6 +29,15 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
+        // ndk
+        ndk {
+            // abiFilters.add("armeabi-v7a")
+            // abiFilters.add("x86_64")
+            abiFilters.add("arm64-v8a")
+            // 添加x86
+            // abiFilters.add("x86")
+        }
     }
 
     buildTypes {
