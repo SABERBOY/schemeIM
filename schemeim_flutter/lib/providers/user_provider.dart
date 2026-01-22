@@ -50,3 +50,6 @@ class UserProvider with ChangeNotifier {
     return TRANSLATIONS[_language]?[key] ?? key;
   }
 }
+
+// Shared legacy instance for app-wide access (e.g., API interceptor).
+final legacyUserProvider = UserProvider();

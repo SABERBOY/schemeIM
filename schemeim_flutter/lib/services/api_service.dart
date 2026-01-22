@@ -11,6 +11,7 @@ import '../models/message.dart';
 import '../models/paginated_response.dart';
 import '../models/room.dart';
 import '../models/user.dart';
+import '../providers/user_provider.dart';
 
 // Shared Preferences Provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -124,7 +125,9 @@ final dioProvider = Provider<Dio>((ref) {
       onError: (DioException e, handler) async {
         if (e.response?.statusCode == 401) {
           // Handle token expiration (logout or refresh)
-          ref.read(tokenProvider.notifier).setToken(null);
+          await ref.read(tokenProvider.notifier).setToken(null);
+          await ref.read(userProvider.notifier).setUser(null);
+          legacyUserProvider.logout();
         }
         return handler.next(e);
       },

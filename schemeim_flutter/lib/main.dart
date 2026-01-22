@@ -100,7 +100,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     }
 
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => UserProvider())],
+      providers: [ChangeNotifierProvider.value(value: legacyUserProvider)],
       child: Consumer<UserProvider>(
         builder: (context, provider, child) {
           // Sync Riverpod user state with legacy UserProvider if logged in
